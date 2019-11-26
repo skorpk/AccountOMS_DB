@@ -1,0 +1,8 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[vw_ZAP260_VMP]
+as
+SELECT id AS idFile,rf_idRecordCasePatient,N_ZAP,IsNew AS PR_NOV from dbo.t_260order_VMP
+GO

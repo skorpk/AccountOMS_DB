@@ -1,0 +1,11 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[vw_sprV002]
+AS 
+SELECT id,name FROM oms_NSI.dbo.sprV002
+
+GO
+GRANT SELECT ON  [dbo].[vw_sprV002] TO [db_AccountOMS]
+GO

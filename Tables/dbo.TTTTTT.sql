@@ -1,0 +1,31 @@
+CREATE TABLE [dbo].[TTTTTT]
+(
+[rf_idCase] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Дата регистрации счета] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Результат] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Пол] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Номер счета] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Дата счета] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Случай] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[МО] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Дата рождения] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Возраст] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[SMO] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Направление] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Новорожденный] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Пациент] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Тариф] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Серия полиса] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Номер полиса] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Код диагноза] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Начат] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Окончен] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Выставлено] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[AmPayZSL_PAC] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[НомерКарты] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[Исход] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[СпособОплаты] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[ЕНП] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL,
+[МО прикрепления] [nvarchar] (255) COLLATE Cyrillic_General_CI_AS NULL
+) ON [PRIMARY]
+GO

@@ -1,0 +1,8 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[vw_MeduslugiSurgery]
+as
+SELECT DISTINCT rf_idCase,MUSurgery FROM dbo.t_Meduslugi WHERE MUSurgery IS NOT NULL
+GO

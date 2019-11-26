@@ -1,0 +1,5 @@
+IF NOT EXISTS (SELECT * FROM master.dbo.syslogins WHERE loginname = N'VTFOMS\AMerinov')
+CREATE LOGIN [VTFOMS\AMerinov] FROM WINDOWS
+GO
+CREATE USER [VTFOMS\AMerinov] FOR LOGIN [VTFOMS\AMerinov]
+GO

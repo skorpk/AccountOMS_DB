@@ -1,0 +1,12 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+CREATE VIEW [dbo].[vw_sprV012]
+AS 
+SELECT id,name,DL_USLOV as USL_OK FROM oms_NSI.dbo.sprV012
+
+GO
+GRANT SELECT ON  [dbo].[vw_sprV012] TO [db_AccountOMS]
+GO

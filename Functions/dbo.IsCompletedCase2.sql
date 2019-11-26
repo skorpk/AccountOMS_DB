@@ -1,0 +1,17 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE FUNCTION [dbo].[IsCompletedCase2](@id BIGINT)
+RETURNS TINYINT
+AS 
+BEGIN
+		DECLARE @ret TINYINT=0
+			IF EXISTS(SELECT * FROM dbo.t_MES WHERE rf_idCase=@id)
+				SELECT @ret=1
+		RETURN @ret
+END
+
+GO
+GRANT EXECUTE ON  [dbo].[IsCompletedCase2] TO [db_AccountOMS]
+GO

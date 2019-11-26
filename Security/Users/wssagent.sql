@@ -1,0 +1,2 @@
+CREATE USER [wssagent] WITHOUT LOGIN
+GO

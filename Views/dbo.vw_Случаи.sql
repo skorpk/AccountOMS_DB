@@ -17,7 +17,7 @@ dbo.vw_МОДляСлучаев AS dmo ON c.rf_idDirectMO = LEFT(dmo.tfomsCode, 
 dbo.t_RegisterPatientAttendant AS rpa ON rpa.rf_idRegisterPatient = rp.id LEFT OUTER JOIN
 dbo.vw_ОКАТОДляСлучаев AS okato1 ON okato1.ter + okato1.kod1 + okato1.kod2 + okato1.kod3 = rpd.OKATO LEFT OUTER JOIN
 dbo.vw_ОКАТОДляСлучаев AS okato2 ON okato2.ter + okato2.kod1 + okato2.kod2 + okato2.kod3 = rpd.OKATO_Place*/
-CREATE VIEW dbo.vw_Случаи
+CREATE VIEW [dbo].[vw_Случаи]
 AS
 SELECT c.id, rp.Fam + ' ' + rp.Im + ' ' + ISNULL(rp.Ot, '') AS Пациент, f.DateRegistration AS ДатаРегистрации, f.CodeM AS CodeMO, mo.FilialId AS CodeFilial
 FROM  dbo.t_Case AS c INNER JOIN

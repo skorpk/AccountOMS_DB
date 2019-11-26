@@ -2,7 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW dbo.vw_СчетаДляСвязиСлучаев
+CREATE VIEW [dbo].[vw_СчетаДляСвязиСлучаев]
 AS
 SELECT rf_idFiles, id, rf_idMO
 FROM  dbo.t_RegistersAccounts

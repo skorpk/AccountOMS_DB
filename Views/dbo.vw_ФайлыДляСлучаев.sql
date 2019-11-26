@@ -2,7 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW dbo.vw_ФайлыДляСлучаев
+CREATE VIEW [dbo].[vw_ФайлыДляСлучаев]
 AS
 SELECT id, DateRegistration, CodeM
 FROM  dbo.t_File

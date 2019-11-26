@@ -2,7 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW dbo.vw_ОКАТОДляСлучаев
+CREATE VIEW [dbo].[vw_ОКАТОДляСлучаев]
 AS
 SELECT ter, kod1, kod2, kod3, ter + kod1 + kod2 + kod3 AS OKATO, razdel, namel
 FROM  OMS_NSI.dbo.sprOKATO

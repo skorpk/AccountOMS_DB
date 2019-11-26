@@ -2,7 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW dbo.vw_МОДляСлучаев2
+CREATE VIEW [dbo].[vw_МОДляСлучаев2]
 AS
 SELECT MCOD, NAM_MOK
 FROM  OMS_NSI.dbo.sprMO

@@ -37,7 +37,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			r.id=ps.rf_idRecordCasePatient																	   					  					      
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND c.rf_idV006<4 AND f.TypeFile='H'
 --=======================================================================================================================--
-CREATE UNIQUE NONCLUSTERED INDEX QU_Temp ON #tCases(rf_idRecordCasePatient) WITH IGNORE_DUP_KEY
+CREATE UNIQUE NONCLUSTERED INDEX QU_Temp ON #tCases(rf_idRecordCasePatient,rf_idCase) WITH IGNORE_DUP_KEY
 INSERT #tCases
 SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay, f.TypeFile
 		,a.rf_idSMO AS CodeSMO,a.ReportMonth,a.Letter ,c.Age , c.DateEnd,a.ReportYear,c.DateBegin

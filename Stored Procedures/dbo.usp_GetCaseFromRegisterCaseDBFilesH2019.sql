@@ -187,8 +187,8 @@ SELECT c.GUID_CASE,a.DS1_T ,a.rf_idN002 ,a.rf_idN003 ,a.rf_idN004 ,a.rf_idN005 ,
 from #case c INNER JOIN RegisterCases.dbo.t_ONK_SL a ON
 		c.id=a.rf_idCase
 
-INSERT #B_DIAG_RC(GUID_Case ,DIAG_TIP ,DIAG_CODE , DIAG_RSLT , DIAG_DATE, REC_RSLT )
-SELECT c.GUID_CASE, aa.TypeDiagnostic ,aa.CodeDiagnostic ,aa.ResultDiagnostic ,aa.DateDiagnostic, aa.REC_RSLT
+INSERT #B_DIAG_RC(GUID_Case ,DIAG_TIP ,DIAG_CODE , DIAG_RSLT , DIAG_DATE, REC_RSLT,SL_ID )
+SELECT c.GUID_CASE, aa.TypeDiagnostic ,aa.CodeDiagnostic ,aa.ResultDiagnostic ,aa.DateDiagnostic, aa.REC_RSLT,c.SL_ID
 from #case c INNER JOIN RegisterCases.dbo.t_ONK_SL a ON
 		c.id=a.rf_idCase
 				INNER JOIN RegisterCases.dbo.t_DiagnosticBlock aa ON
@@ -201,10 +201,11 @@ from #case c INNER JOIN RegisterCases.dbo.t_ONK_SL a ON
 				INNER JOIN RegisterCases.dbo.t_Contraindications aa ON
 		a.id=aa.rf_idONK_SL
 
-INSERT #CONS_RC(GUID_Case ,PR_CONS ,DT_CONS )
-SELECT c.GUID_CASE,  aa.PR_CONS, aa.DateCons
+INSERT #CONS_RC(GUID_Case ,PR_CONS ,DT_CONS,SL_ID )
+SELECT c.GUID_CASE,  aa.PR_CONS, aa.DateCons, c.SL_ID
 from #case c INNER JOIN RegisterCases.dbo.t_Consultation aa ON
-		c.id=aa.rf_idCase
+		c.id=aa.rf_idCase				
+                
 
 INSERT #NAPR_RC(GUID_Case ,NAPR_DATE ,NAPR_V ,MET_ISSL ,NAPR_USL,NAPR_MO )
 SELECT c.GUID_CASE,  a.DirectionDate ,a.TypeDirection ,a.MethodStudy ,a.DirectionMU,a.DirectionMO

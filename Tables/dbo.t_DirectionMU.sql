@@ -8,6 +8,9 @@ CREATE TABLE [dbo].[t_DirectionMU]
 [DirectionMO] [varchar] (6) COLLATE Cyrillic_General_CI_AS NULL
 ) ON [PRIMARY]
 GO
-GRANT SELECT ON  [dbo].[t_DirectionMU] TO [db_AccountOMS]
+CREATE NONCLUSTERED INDEX [IX_DirectionMU] ON [dbo].[t_DirectionMU] ([rf_idCase]) INCLUDE ([DirectionDate], [DirectionMO], [DirectionMU], [MethodStudy], [TypeDirection]) ON [PRIMARY]
+GO
 GRANT INSERT ON  [dbo].[t_DirectionMU] TO [db_AccountOMS]
+GO
+GRANT SELECT ON  [dbo].[t_DirectionMU] TO [db_AccountOMS]
 GO

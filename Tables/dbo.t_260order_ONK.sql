@@ -71,7 +71,13 @@ CREATE TABLE [dbo].[t_260order_ONK]
 GO
 CREATE NONCLUSTERED INDEX [IX_IDSP] ON [dbo].[t_260order_ONK] ([IDSP]) ON [PRIMARY]
 GO
-CREATE NONCLUSTERED INDEX [IX_IdCase] ON [dbo].[t_260order_ONK] ([rf_idCase]) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [IX_Unload_260] ON [dbo].[t_260order_ONK] ([IsUnload]) INCLUDE ([MONTH], [YEAR]) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [IX_260_LPU] ON [dbo].[t_260order_ONK] ([LPU]) INCLUDE ([AmountPayment], [DATE_Z_1], [Date_Z_2], [FOR_POM], [id], [IDCASE], [IDSP], [ISHOD], [KD_Z], [N_ZAP], [NPR_MO], [rf_idCase], [rf_idRecordCasePatient], [RSLT], [USL_OK], [VIDPOM]) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [IX_IdCase] ON [dbo].[t_260order_ONK] ([rf_idCase]) INCLUDE ([C_ZAB], [DATE_1], [DATE_2], [DET], [DS_ONK], [DS1], [IDDOKT], [NHISTORY], [PROFIL_K], [PRVS], [Quantity], [SUM_M], [VERS_SPEC]) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [IX_260_UslOK] ON [dbo].[t_260order_ONK] ([USL_OK]) INCLUDE ([Date_Z_2], [rf_idCase]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_Rerport_1] ON [dbo].[t_260order_ONK] ([YEAR], [MONTH]) INCLUDE ([Account], [CODE], [CODE_MO], [CodeSMO34], [DATA], [DateRegister], [FILENAME], [id], [ID_PAC], [IsNew], [N_ZAP], [NOVOR], [NPOLIS], [PLAT], [rf_idCase], [rf_idRecordCasePatient], [rf_idSMO], [SPOLIS], [SUMMAV], [VERSION], [VPOLIS]) ON [PRIMARY]
 GO

@@ -3,8 +3,9 @@ GO
 SET ANSI_NULLS ON
 GO
 
+
 CREATE VIEW [dbo].[vw_ZAP260_ONK]
-as
-SELECT id AS idFile,rf_idRecordCasePatient,N_ZAP,IsNew AS PR_NOV,MONTH,YEAR from dbo.t_260order_ONK
+AS
+SELECT DISTINCT id AS idFile,rf_idRecordCasePatient,N_ZAP,IsNew AS PR_NOV,MONTH,YEAR FROM dbo.t_260order_ONK
 
 GO

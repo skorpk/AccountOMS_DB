@@ -12,8 +12,15 @@ CREATE PROCEDURE [dbo].[usp_selectCases19Type1]
 @p_LPUCode INT = -1 ,
 @p_TypeCheckup char='0', -- 0 - без учета КОСКУ, 4 - все случаи с учетом КОСКУ (есть или нет - неважно), 1,2,3 - только случаи с определенным типом
 --@p_isDispObsFilterOn bit = 0, --есть ли фильтр по Д-наблюдению, в зависимости от этого используются разные запросы
+@p_Premature bit = 0, --VNOV_M, наличие новорожденных
+@p_Diag nvarchar(20) = '', --фильтр на диагнозы
+@p_PainSyndrome bit = 0, --болевой синдром, DS3 like 'R52%'
+@p_ZNODiag bit = 0, --диагностика ЗНО, B_DIAG
+@p_ZNOContraindications bit = 0, --противопоказания ЗНО, B_PROT
+@p_USL_TIP tinyint = 0, --тип онкологической услуги, N013
 @p_AdditionalFilter NVARCHAR(max) = '',
-@Query NVARCHAR(max)=null 
+@Query NVARCHAR(max)=null ,
+@FilterJoin NVARCHAR(max) = ''
 AS 
 
 IF ( @p_AccountCode IS NOT NULL ) 
@@ -31,9 +38,9 @@ IF ( @p_AccountCode IS NOT NULL )
 			mo2.NameS AS МО,rtrim(d.DS1) +' — '+ mkb.Diagnosis AS Диагноз,rcp.[AttachLPU] AS МОПрикрепления,case when RTRIM(rcp.[NewBorn])>0 then 'Да' else 'Нет' end as NewBornWord,
 			c.rf_idDoctor СНИЛСВрача,rp.TEL PacTel,dis.[DateDefine] ДатаИнвалидности,v12.Name [Исход],
 
-			case when rcp.IsNew=0 then 'Первичная' when rcp.IsNew=1 then 'Повторная' end PR_NOV,/*Признак исправленной записи*/psmo.ENP ENP,rtrim(mes.MES)+' — '+ mu.[MUName] CODE_MES1,/*Код ЗС*/c.Comments COMENTSL,/*Комментарий к случаю*/
+			case when rcp.IsNew=0 then 'Первичная' when rcp.IsNew=1 then 'Повторная' end PR_NOV,/*Признак исправленной записи*/psmo.ENP ENP,rtrim(mes.MES)+' — '+ isnull(mu.[Name],'') CODE_MES1,/*Код ЗС*/c.Comments COMENTSL,/*Комментарий к случаю*/
 			cc.id CompletedCaseID,[SMOKOD] + ' - ' + [NAM_SMOK] SMO,rcp.BirthWeight VNOV_D,/*вес ребенка, пациент - ребенок*/dis.[TypeOfGroup] INV /*группа инв*/,dis.rf_idReasonDisability REASON_INV/*Код причины инвалидности*/,dis.Diagnosis DS_INV/*код осн. диагноза*/,
-			cc.HospitalizationPeriod KD_Z /*продолжительность госпитализации*/, c.MSE /*Направление на МСЭ*/,c.KD /*Продолжительность госпитализации*/,c.C_ZAB/*Характер основного заболевания*/,
+			cc.HospitalizationPeriod KD_Z /*продолжительность госпитализации*/, c.MSE /*Направление на МСЭ*/,c.KD /*Продолжительность госпитализации*/,cast(c.C_ZAB as varchar)+ ' — '+ v27.[N_CZ] C_ZAB/*Характер основного заболевания*/,
 			case when c.TypeTranslation=1 then 'Поступил самостоятельно' when c.TypeTranslation=2 then 'Доставлен СМП' when c.TypeTranslation=3 then 'Перевод из другой МО' when c.TypeTranslation=4 then 'Перевод внутри МО' end P_PER/*Признак поступления/перевода*/,
 			case when onk.DS_ONK=0 then 'Нет' when onk.DS_ONK=1 then 'Да' end DS_ONK,case when c.[IsFirstDS]=1 then 'Да' else 'Нет' end DS1_PR,v6.Name AS УсловияОказания, v8.Name VIDPOM,
 			v14.[NAME] FOR_POM,v10.Name AS СпособОплаты, v18.[Name] VID_HMP, v19.Name METOD_HMP,v20.name PROFIL_K, md.name_short PODR, mp.name_short LPU_1/*МОМП*/,v25.IDPC+' — '+v25.N_PC P_CEL,
@@ -69,7 +76,8 @@ IF ( @p_AccountCode IS NOT NULL )
 	LEFT JOIN dbo.t_RegisterPatientDocument AS rpd ON rpd.rf_idRegisterPatient = rp.id
 	LEFT JOIN [dbo].[vw_sprMedicalSpeciality] v4 on c.rf_idV004=v4.id AND c.DateEnd>=v4.DateBeg AND c.DateEnd<v4.DateEnd
 	left join dbo.t_MES mes on mes.rf_idCase=c.id
-	LEFT JOIN dbo.vw_sprMUAll mu on mu.[MU]=mes.[MES]
+	LEFT JOIN oms_nsi.dbo.vw_sprMUAandCSG mu on mu.[code]=mes.[MES] and c.DateEnd between mu.[dateBeg] and mu.[dateEnd]
+	/*LEFT JOIN dbo.vw_sprMUAll mu on mu.[MU]=mes.[MES]*/ 	
 	left join [dbo].[t_DirectionDate] dd on dd.rf_idCase=c.id
 	left join [dbo].[t_ProfileOfBed] pb on pb.[rf_idCase]=c.id
 	left join OMS_NSI.dbo.sprV020 v20 on pb.rf_idV020 = v20.Code and c.DateEnd between v20.DateBeg and v20.DateEnd
@@ -88,6 +96,7 @@ IF ( @p_AccountCode IS NOT NULL )
 	left JOIN [oms_nsi].[dbo].[sprN003] n3 on n3.[ID_T]=osl.[rf_idN003] and c.DateEnd between n3.DateBeg and n3.DateEnd
 	left JOIN [oms_nsi].[dbo].[sprN004] n4 on n4.[ID_N]=osl.[rf_idN004] and c.DateEnd between n4.DateBeg and n4.DateEnd
 	left JOIN [oms_nsi].[dbo].[sprN005] n5 on n5.[ID_M]=osl.[rf_idN005] and c.DateEnd between n5.DateBeg and n5.DateEnd
+	left join [oms_nsi].[dbo].[sprV027] v27 on v27.IDCZ=c.C_ZAB and c.DateBegin between v27.DateBeg and v27.DateEnd
 
 	where f.TypeFile='H' --первый тип счетов
 	ORDER BY c.idRecordCase
@@ -144,7 +153,7 @@ SELECT @p_FilialCode =CASE WHEN @p_FilialCode = -1 THEN NULL ELSE (SELECT filial
 	[TypeTranslation] [tinyint] NULL,
 	[BirthWeight] [smallint] null,
 	[MSE] [tinyint] null,
-	[C_ZAB] [tinyint] null,
+	[C_ZABid] [tinyint] null,
 	[KD] [smallint] null,
 	[IsFirstDS] [tinyint] null,
 	[rf_idV012] [smallint] null, --исход
@@ -157,17 +166,226 @@ SELECT @p_FilialCode =CASE WHEN @p_FilialCode = -1 THEN NULL ELSE (SELECT filial
 	[rf_idV019] [int] null, --метод ВМП
 	[rf_idDepartmentMO] [int] null, --подразделение
 	[rf_idSubMO] [varchar](8) null, --МОМП
-	[IT_SL] [decimal](3, 2) null --значение КСЛП
+	[IT_SL] [decimal](3, 2) null, --значение КСЛП
+	[rf_idONK_SL] [int] null
 ) 
  
+create table #trf_idCaseTOTALFilter ([rf_idCase] [bigint] NOT NULL)
+create table #trf_idCaseTEMPFilter ([rf_idCase] [bigint] NOT NULL)
+
+
+if (@p_Premature = 1)
+begin
+	delete from #trf_idCaseTOTALFilter
+	
+	insert into #trf_idCaseTOTALFilter
+	select distinct c.id rf_idcase
+	from dbo.t_File f 
+	INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+	INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+	INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+	INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+	inner join [AccountOMS].[dbo].[t_BirthWeight] bw on c.id=bw.rf_idCase
+	WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+	and f.TypeFile='H'
+	and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+if (@p_Diag <> '')
+begin
+	create table #tD ([DiagnosisCode] [char](10) NOT NULL)
+	if (CHARINDEX('%',@p_Diag)>0)
+		begin
+			insert into #tD SELECT DiagnosisCode FROM dbo.vw_sprMKB10 WHERE DiagnosisCode LIKE @p_Diag
+		end
+	else
+		begin
+			insert into #tD SELECT DiagnosisCode FROM dbo.vw_sprMKB10 WHERE DiagnosisCode=@p_Diag
+		end
+
+		delete from #trf_idCaseTEMPFilter
+	
+		insert into #trf_idCaseTEMPFilter
+		select distinct c.id rf_idcase
+		from dbo.t_File f 
+		INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+		INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+		INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+		INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+		INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+		inner join [AccountOMS].[dbo].[t_Diagnosis] d on c.id=d.rf_idCase
+		INNER JOIN #tD dd ON d.DiagnosisCode=dd.DiagnosisCode
+		WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+		and f.TypeFile='H'
+		and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+
+		if (@p_Premature = 1 or @p_Diag <> '')
+			begin
+				delete t1 from #trf_idCaseTOTALFilter t1
+				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
+			end
+		else
+			begin
+				delete from #trf_idCaseTOTALFilter
+
+				insert into #trf_idCaseTOTALFilter
+				select rf_idCase from #trf_idCaseTEMPFilter
+			end
+				
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+if (@p_PainSyndrome = 1)
+begin
+	delete from #trf_idCaseTEMPFilter	
+
+	insert into #trf_idCaseTEMPFilter
+	select distinct c.id rf_idcase
+	from dbo.t_File f 
+	INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+	INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+	INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+	INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+	inner join [AccountOMS].[dbo].[t_Diagnosis] d on c.id=d.rf_idCase
+	WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+	and f.TypeFile='H'
+	and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+	and d.[DiagnosisCode] like 'R52%' and TypeDiagnosis = 4/*DS3*/
+
+			if (@p_Premature = 1 or @p_Diag <> '')
+			begin
+				delete t1 from #trf_idCaseTOTALFilter t1
+				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
+			end
+		else
+			begin
+				delete from #trf_idCaseTOTALFilter
+
+				insert into #trf_idCaseTOTALFilter
+				select rf_idCase from #trf_idCaseTEMPFilter
+			end
+
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+if (@p_ZNODiag = 1)
+begin
+
+	delete from #trf_idCaseTEMPFilter	
+
+	insert into #trf_idCaseTEMPFilter
+	select distinct c.id rf_idcase
+	from dbo.t_File f 
+	INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+	INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+	INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+	INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+	INNER JOIN [dbo].[t_ONK_SL] osl on osl.[rf_idCase]=c.id
+	inner join [AccountOMS].[dbo].[t_DiagnosticBlock] db on osl.id=db.[rf_idONK_SL]
+	WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+	and f.TypeFile='H'
+	and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+
+			if (@p_Premature = 1 or @p_Diag <> '' or @p_PainSyndrome = 1)
+			begin
+				delete t1 from #trf_idCaseTOTALFilter t1
+				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
+			end
+		else
+			begin
+				delete from #trf_idCaseTOTALFilter
+
+				insert into #trf_idCaseTOTALFilter
+				select rf_idCase from #trf_idCaseTEMPFilter
+			end
+
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+if (@p_ZNOContraindications = 1)
+begin
+
+	delete from #trf_idCaseTEMPFilter	
+
+	insert into #trf_idCaseTEMPFilter
+	select distinct c.id rf_idcase
+	from dbo.t_File f 
+	INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+	INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+	INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+	INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+	INNER JOIN [dbo].[t_ONK_SL] osl on osl.[rf_idCase]=c.id
+	inner join [AccountOMS].[dbo].[t_Contraindications] cd on osl.id=cd.[rf_idONK_SL]
+	WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+	and f.TypeFile='H'
+	and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+
+			if (@p_Premature = 1 or @p_Diag <> '' or @p_PainSyndrome = 1 or @p_ZNODiag = 1)
+			begin
+				delete t1 from #trf_idCaseTOTALFilter t1
+				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
+			end
+		else
+			begin
+				delete from #trf_idCaseTOTALFilter
+
+				insert into #trf_idCaseTOTALFilter
+				select rf_idCase from #trf_idCaseTEMPFilter
+			end
+
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+if (@p_USL_TIP > 0)
+begin
+	delete from #trf_idCaseTEMPFilter	
+
+	insert into #trf_idCaseTEMPFilter
+	select distinct c.id rf_idcase
+	from dbo.t_File f 
+	INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
+	INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>'34'
+	INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
+	INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<@p_EndDate
+	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+	inner join [AccountOMS].[dbo].[t_ONK_USL] ou on c.id=ou.rf_idCase
+	WHERE  ra.ReportYearMonth between @p_StartRepPeriod and @p_EndRepPeriod
+	and f.TypeFile='H'
+	and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
+	and ou.rf_idN013=@p_USL_TIP
+
+			if (@p_Premature = 1 or @p_Diag <> '' or @p_PainSyndrome = 1 or @p_ZNODiag = 1 or @p_ZNOContraindications = 1)
+			begin
+				delete t1 from #trf_idCaseTOTALFilter t1
+				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
+			end
+		else
+			begin
+				delete from #trf_idCaseTOTALFilter
+
+				insert into #trf_idCaseTOTALFilter
+				select rf_idCase from #trf_idCaseTEMPFilter
+			end
+
+	set @FilterJoin = ' inner join #trf_idCaseTOTALFilter tf on tf.rf_idCase = c.id '
+end
+
+
+
 if (@p_TypeCheckup in ('0','4'))
 begin
 	SET @Query ='insert into #t 
 						([CaseId],[Случай],[Выставлено],[IsChildTariff],[НомерКарты],[Начат],[Окончен],[ДатаРождения],[Возраст],[SeriaPolis],[NumberPolis],[ДатаРегистрации],[CodeMO]
 						,[accountnumber],[accountdate],[attachMO],[СНИЛСВрача],[NewBorn],[PacTel],[rf_idV005],[rf_idSMO],[rf_idV009],[rpid],[rf_idV004],
 					
-						[IsNew],[COMENTSL],[RCPID],[ReportYear],[fam],[im],[ot], [TypeTranslation],BirthWeight, MSE, C_ZAB, KD,IsFirstDS,rf_idV012,rf_idV006,rf_idV008,rf_idDirectMO,
-						rf_idV002,rf_idV014,rf_idV010,rf_idV018,rf_idV019, rf_idDepartmentMO, rf_idSubMO,IT_SL)
+						[IsNew],[COMENTSL],[RCPID],[ReportYear],[fam],[im],[ot], [TypeTranslation],BirthWeight, MSE, C_ZABid, KD,IsFirstDS,rf_idV012,rf_idV006,rf_idV008,rf_idDirectMO,
+						rf_idV002,rf_idV014,rf_idV010,rf_idV018,rf_idV019, rf_idDepartmentMO, rf_idSubMO,IT_SL,rf_idONK_SL)
 				(
 				SELECT  c.id,c.idRecordCase,c.AmountPayment
 						,c.IsChildTariff,c.NumberHistoryCase,c.DateBegin,c.DateEnd
@@ -177,13 +395,15 @@ begin
 
 						,rcp.IsNew,c.Comments, rcp.id rcpid, ra.ReportYear,rp.Fam,rp.Im,rp.Ot, c.[TypeTranslation],rcp.BirthWeight
 						,c.MSE, c.C_ZAB,c.KD, c.[IsFirstDS], c.rf_idV012,c.rf_idV006,c.rf_idV008,c.rf_idDirectMO,c.rf_idV002,c.rf_idV014,c.rf_idV010,c.rf_idV018,c.rf_idV019
-						,c.rf_idDepartmentMO, c.rf_idSubMO, c.IT_SL
+						,c.rf_idDepartmentMO, c.rf_idSubMO, c.IT_SL, osl.[id]
 						FROM dbo.t_File f 
 						INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
 						INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>''34''
 						INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
 						INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<'''+@p_EndDate+ '''
 						INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
+						 ' + @FilterJoin + ' 
+						left JOIN [dbo].[t_ONK_SL] osl on osl.[rf_idCase]=c.id
 																
 						WHERE  ra.ReportYearMonth between '+@p_StartRepPeriod+' and '+@p_EndRepPeriod+' 
 						and f.TypeFile=''H'' 
@@ -195,8 +415,8 @@ else if (@p_TypeCheckup in ('1','2','3'))
 						([CaseId],[Случай],[Выставлено],[IsChildTariff],[НомерКарты],[Начат],[Окончен],[ДатаРождения],[Возраст],[SeriaPolis],[NumberPolis],[ДатаРегистрации],[CodeMO]
 						,[accountnumber],[accountdate],[attachMO],[СНИЛСВрача],[NewBorn],[PacTel],[rf_idV005],[rf_idSMO],[rf_idV009],[rpid],[rf_idV004],
 					
-						[IsNew],[COMENTSL],[RCPID],[ReportYear],[fam],[im],[ot], [TypeTranslation],BirthWeight, MSE, C_ZAB, KD,IsFirstDS,rf_idV012,rf_idV006,rf_idV008,rf_idDirectMO,
-						HopitalisationType,rf_idV002,rf_idV014,rf_idV010,rf_idV018,rf_idV019, rf_idDepartmentMO, rf_idSubMO,IT_SL)
+						[IsNew],[COMENTSL],[RCPID],[ReportYear],[fam],[im],[ot], [TypeTranslation],BirthWeight, MSE, C_ZABid, KD,IsFirstDS,rf_idV012,rf_idV006,rf_idV008,rf_idDirectMO,
+						HopitalisationType,rf_idV002,rf_idV014,rf_idV010,rf_idV018,rf_idV019, rf_idDepartmentMO, rf_idSubMO,IT_SL,rf_idONK_SL)
 				(
 				SELECT  c.id,c.idRecordCase,c.AmountPayment
 						,c.IsChildTariff,c.NumberHistoryCase,c.DateBegin,c.DateEnd
@@ -206,7 +426,7 @@ else if (@p_TypeCheckup in ('1','2','3'))
 
 						,rcp.IsNew,c.Comments, rcp.id rcpid, ra.ReportYear,rp.Fam,rp.Im,rp.Ot,c.[TypeTranslation],rcp.BirthWeight
 						,c.MSE, c.C_ZAB,c.KD, c.[IsFirstDS],c.rf_idV012, c.rf_idV006,c.rf_idV008,c.rf_idDirectMO,c.HopitalisationType,c.rf_idV002,c.rf_idV014,c.rf_idV010
-						,c.rf_idV018,c.rf_idV019, c.rf_idDepartmentMO, c.rf_idSubMO, c.IT_SL
+						,c.rf_idV018,c.rf_idV019, c.rf_idDepartmentMO, c.rf_idSubMO, c.IT_SL, osl.[id]
 						FROM dbo.t_File f 
 						INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
 						INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>''34''
@@ -214,6 +434,8 @@ else if (@p_TypeCheckup in ('1','2','3'))
 						INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<'''+@p_EndDate+ '''
 						INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
 						inner join [dbo].[t_PaymentAcceptedCase2] pac2 on pac2.rf_idCase=c.id and pac2.TypeCheckup='''+@p_TypeCheckup+'''
+						 ' + @FilterJoin + ' 
+						left JOIN [dbo].[t_ONK_SL] osl on osl.[rf_idCase]=c.id
 																
 						WHERE  ra.ReportYearMonth between '+@p_StartRepPeriod+' and '+@p_EndRepPeriod+' 
 						and f.TypeFile=''H'' 
@@ -246,11 +468,67 @@ end
 else if (@p_TypeCheckup='0')
 begin insert into #kosku select 0 CaseId, 0 InfoMEK, '' InfoMEE, '' InfoEMP, 0 deducMEK, 0 deducMEE, 0 deducEKMP end
 
+--if (@p_Premature = 1)
+--begin
+--	delete t1 from #t t1
+--	where not exists (select caseid from #t t2
+--	inner join [AccountOMS].[dbo].[t_BirthWeight] bw on t2.CaseId=bw.rf_idCase
+--	where t1.CaseId=t2.CaseId)
+--end
+
+--if (@p_Diag <> '')
+--begin
+--	if (CHARINDEX('%',@p_Diag)>0)
+--		delete t1 from #t t1
+--		where not exists (select caseid from #t t2
+--		inner join [AccountOMS].[dbo].[t_Diagnosis] d on t2.CaseId=d.rf_idCase
+--		where t1.CaseId=t2.CaseId and d.[DiagnosisCode] like @p_Diag)
+--	else
+--		delete t1 from #t t1
+--		where not exists (select caseid from #t t2
+--		inner join [AccountOMS].[dbo].[t_Diagnosis] d on t2.CaseId=d.rf_idCase
+--		where t1.CaseId=t2.CaseId and d.[DiagnosisCode]=@p_Diag)
+--end
+
+--if (@p_PainSyndrome = 1)
+--begin
+--		delete t1 from #t t1
+--		where not exists (select caseid from #t t2
+--		inner join [AccountOMS].[dbo].[t_Diagnosis] d on t2.CaseId=d.rf_idCase
+--		where t1.CaseId=t2.CaseId and d.[DiagnosisCode] like 'R52%' and TypeDiagnosis = 4 /*DS3*/)
+--end
+
+--if (@p_ZNODiag = 1)
+--begin
+--	delete t1 from #t t1
+--	where not exists (select caseid from #t t2
+--	inner join [AccountOMS].[dbo].[t_DiagnosticBlock] db on t2.rf_idONK_SL=db.[rf_idONK_SL]
+--	where t1.CaseId=t2.CaseId)
+--end
+
+--if (@p_ZNOContraindications = 1)
+--begin
+--	delete t1 from #t t1
+--	where not exists (select caseid from #t t2
+--	inner join [AccountOMS].[dbo].[t_Contraindications] cd on t2.rf_idONK_SL=cd.[rf_idONK_SL]
+--	where t1.CaseId=t2.CaseId)
+--end
+
+--if (@p_USL_TIP > 0)
+--begin
+--	delete t1 from #t t1
+--	where not exists (select caseid from #t t2
+--	inner join [AccountOMS].[dbo].[t_ONK_USL] ou on t2.CaseId=ou.rf_idCase
+--	where t1.CaseId=t2.CaseId and ou.rf_idN013=@p_USL_TIP)
+--end
+
+
+
 select c.CaseId,c.[Окончен],osl.id osl_id,c.*,v9.Name Результат,v4.Name СпециальностьМедРаботника,v5.Name Пол
 	,rpd.SNILS СНИЛС,mo.CodeM+' — '+mo.MOName МО
 	,[SMOKOD] + ' - ' + [NAM_SMOK] SMO--,dmo.NAM_MOK Направление
 	,case when RTRIM(c.[NewBorn])>0 then 'Да' else 'Нет' end NewBornWord
-	, rtrim(mes.MES)+' — '+ mu.[MUName] CODE_MES1
+	, rtrim(mes.MES)+' — '+ isnull(mu.[MUName],'') CODE_MES1
 	,cc.id CompletedCaseID,psmo.ENP,dis.[DateDefine] [ДатаИнвалидности], UPPER(c.Fam + ' ' + c.Im + ' ' + ISNULL(c.Ot,'')) [Пациент]
 	,CAST(CASE WHEN c.IsChildTariff = 0 THEN 'Взрослый' WHEN c.IsChildTariff = 1 THEN 'Детский' ELSE 'Не указан' END AS VARCHAR(20)) [Тариф]
 	,ltrim(isnull(c.SeriaPolis,'') + ' '+c.NumberPolis) [НомерПолиса],case when c.IsNew=0 then 'Первичная' when c.IsNew=1 then 'Повторная' end PR_NOV
@@ -259,7 +537,7 @@ select c.CaseId,c.[Окончен],osl.id osl_id,c.*,v9.Name Результат,
 
  
 	c.BirthWeight VNOV_D,/*вес ребенка, пациент - ребенок*/dis.[TypeOfGroup] INV /*группа инв*/,dis.rf_idReasonDisability REASON_INV/*Код причины инвалидности*/,dis.Diagnosis DS_INV/*код осн. диагноза*/,
-	cc.HospitalizationPeriod KD_Z /*продолжительность госпитализации*/,c.KD /*Продолжительность госпитализации*/,c.C_ZAB/*Характер основного заболевания*/,
+	cc.HospitalizationPeriod KD_Z /*продолжительность госпитализации*/,c.KD /*Продолжительность госпитализации*/,cast(c.C_ZABid as varchar) +' — '+ v27.N_CZ C_ZAB/*Характер основного заболевания*/,
 	case when c.TypeTranslation=1 then 'Поступил самостоятельно' when c.TypeTranslation=2 then 'Доставлен СМП' when c.TypeTranslation=3 then 'Перевод из другой МО' when c.TypeTranslation=4 then 'Перевод внутри МО' end P_PER/*Признак поступления/перевода*/,
 	case when onk.DS_ONK=0 then 'Нет' when onk.DS_ONK=1 then 'Да' end DS_ONK,v6.Name AS УсловияОказания, v8.Name VIDPOM,c.rf_idDirectMO+' — '+dmo.NAM_MOK AS Направление, dd.DirectionDate,
 	v14.[NAME] FOR_POM,v2.name AS Профиль,v10.Name AS СпособОплаты, v18.[Name] VID_HMP, v19.Name METOD_HMP, v20.name PROFIL_K, md.name_short PODR, mp.name_short LPU_1/*МОМП*/,v25.IDPC+' — '+v25.N_PC P_CEL,
@@ -273,7 +551,7 @@ INNER JOIN #LPU AS mo on c.[CodeMO]=mo.CodeM
 inner join [dbo].[t_CompletedCase] cc on cc.rf_idRecordCasePatient=c.RCPID
 inner join dbo.t_PatientSMO psmo on psmo.rf_idRecordCasePatient=c.RCPID
 INNER JOIN [dbo].[t_DS_ONK_REAB] onk on onk.[rf_idCase]=c.CaseId
-inner join [dbo].[t_Diagnosis] d on d.[TypeDiagnosis]=1 and d.[rf_idCase]=c.CaseId
+inner join [AccountOMS].[dbo].[t_Diagnosis] d on c.CaseId=d.rf_idCase and d.TypeDiagnosis=1 /*DS1*/
 inner join [OMS_nsi].[dbo].[sprMKB] mkb on mkb.[DiagnosisCode]=d.[DiagnosisCode]
 INNER JOIN OMS_NSI.dbo.sprV002 AS v2 ON c.rf_idV002 = v2.Id and c.[Окончен] between v2.DateBeg and v2.DateEnd
 INNER JOIN OMS_NSI.dbo.sprV006 AS v6 ON c.rf_idV006 = v6.Id and c.[Окончен] between v6.DateBeg and v6.DateEnd
@@ -290,7 +568,8 @@ LEFT JOIN dbo.t_RegisterPatientDocument AS rpd ON rpd.rf_idRegisterPatient = c.r
 LEFT JOIN [dbo].[vw_sprMedicalSpeciality] v4 on c.rf_idV004=v4.id AND c.[Окончен]>=v4.DateBeg AND c.[Окончен]<v4.DateEnd
 LEFT JOIN OMS_NSI.dbo.sprMO AS dmo ON dmo.mcod = c.rf_idDirectMO
 left join dbo.t_MES mes on mes.rf_idCase=c.CaseId
-LEFT JOIN dbo.vw_sprMUAll mu on mu.[MU]=mes.[MES]
+LEFT JOIN /*oms_nsi.dbo.vw_sprMUandCSG*/dbo.vw_sprMESandCSG mu on mu.[code]=mes.[MES] and c.[Окончен] between isnull(mu.[dateBeg],'19000101') and isnull(mu.[dateEnd],'22221231')
+/*LEFT JOIN dbo.vw_sprMUAll mu on mu.[MU]=mes.[MES]*/
 left join [dbo].[t_DirectionDate] dd on dd.rf_idCase=c.CaseId
 left join #kosku k on k.CaseId=c.CaseId
 left join [dbo].[t_ProfileOfBed] pb on pb.[rf_idCase]=c.CaseId
@@ -310,10 +589,10 @@ left JOIN [oms_nsi].[dbo].[sprN002] n2 on n2.[ID_St]=osl.[rf_idN002] and c.[Ок
 left JOIN [oms_nsi].[dbo].[sprN003] n3 on n3.[ID_T]=osl.[rf_idN003] and c.[Окончен] between n3.DateBeg and n3.DateEnd
 left JOIN [oms_nsi].[dbo].[sprN004] n4 on n4.[ID_N]=osl.[rf_idN004] and c.[Окончен] between n4.DateBeg and n4.DateEnd
 left JOIN [oms_nsi].[dbo].[sprN005] n5 on n5.[ID_M]=osl.[rf_idN005] and c.[Окончен] between n5.DateBeg and n5.DateEnd
-order by c.[Окончен]
-
-
+left join [oms_nsi].[dbo].[sprV027] v27 on v27.IDCZ=c.C_ZABid and c.[Окончен] between v27.DateBeg and v27.DateEnd
+--order by c.[Окончен]
 END 
+
 GO
 
 

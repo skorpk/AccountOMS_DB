@@ -5,13 +5,14 @@ GO
 
 
 
+
 CREATE VIEW [dbo].[vw_Pacient260_ONK]
 AS
-SELECT id AS idFile,rf_idRecordCasePatient,N_ZAP,ID_PAC,VPOLIS
-,CASE WHEN v.rf_idSMO<>'34' THEN '18000' ELSE null end AS ST_OKATO,SPOLIS,NPOLIS
-		,CASE WHEN v.rf_idSMO<>'34' THEN v.rf_idSMO ELSE v.CodeSMO34 end AS SMO	
+SELECT DISTINCT id AS idFile,rf_idRecordCasePatient,N_ZAP,ID_PAC,VPOLIS
+,CASE WHEN v.rf_idSMO<>'34' THEN '18000' ELSE NULL END AS ST_OKATO,SPOLIS,NPOLIS
+		,CASE WHEN v.rf_idSMO<>'34' THEN v.rf_idSMO ELSE v.CodeSMO34 END AS SMO	
 		,NOVOR, MONTH,YEAR 
-from dbo.t_260order_ONK v
+FROM dbo.t_260order_ONK v
 
 
 

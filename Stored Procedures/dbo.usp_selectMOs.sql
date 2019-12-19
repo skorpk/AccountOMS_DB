@@ -13,7 +13,7 @@ AS
 if (@p_selectedTabIndex in (4,6)) --счета/случаи второго типа
 BEGIN
 SELECT distinct LEFT(a.CodeM, 6) as CodeMO
-      ,LEFT(a.CodeM, 6)+' '+a.[NameS]
+      ,LEFT(a.CodeM, 6)+' — '+a.[NameS]
       ,a.[NameS] as MO
   FROM [oms_NSI].[dbo].[vw_sprT001] a
   inner join [oms_NSI].[dbo].[tClinicalExamMO] ce on a.MOId=ce.[rf_MOId] and ce.[year]=@p_ReportYear
@@ -25,7 +25,7 @@ END
 else
 BEGIN
 SELECT LEFT(a.CodeM, 6) as CodeMO
-      ,LEFT(a.CodeM, 6)+' '+a.[NameS]
+      ,LEFT(a.CodeM, 6)+' — '+a.[NameS]
       ,a.[NameS] as MO
   FROM [oms_NSI].[dbo].[vw_sprT001] a
   where a.[FilialId]=case when (@p_FilialId=-1 or @p_FilialId=0)  then a.[FilialId] else @p_FilialId end

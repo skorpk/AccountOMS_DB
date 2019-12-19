@@ -19,10 +19,11 @@ CREATE TABLE [dbo].[t_ONK_SL]
 GO
 ALTER TABLE [dbo].[t_ONK_SL] ADD CONSTRAINT [PK__t_ONK_SL__3213E83F72B1C908] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
-CREATE NONCLUSTERED INDEX [IX_ONK_SL_Case] ON [dbo].[t_ONK_SL] ([rf_idCase]) INCLUDE ([id]) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [IX_ONK_SL_Case] ON [dbo].[t_ONK_SL] ([rf_idCase]) INCLUDE ([BSA], [DS1_T], [HEI], [id], [IsMetastasis], [K_FR], [rf_idN002], [rf_idN003], [rf_idN004], [rf_idN005], [TotalDose], [WEI]) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[t_ONK_SL] ADD CONSTRAINT [FK_t_ONK_SL_Cases] FOREIGN KEY ([rf_idCase]) REFERENCES [dbo].[t_Case] ([id]) ON DELETE CASCADE
 GO
-GRANT SELECT ON  [dbo].[t_ONK_SL] TO [db_AccountOMS]
 GRANT INSERT ON  [dbo].[t_ONK_SL] TO [db_AccountOMS]
+GO
+GRANT SELECT ON  [dbo].[t_ONK_SL] TO [db_AccountOMS]
 GO

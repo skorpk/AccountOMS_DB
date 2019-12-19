@@ -944,7 +944,7 @@ CREATE TABLE #ONK_SL_RC
 						HEI TINYINT,
 						BSA DECIMAL(3,2)	
 						 )
-CREATE TABLE #B_DIAG_RC(GUID_Case UNIQUEIDENTIFIER,DIAG_TIP TINYINT,DIAG_CODE SMALLINT, DIAG_RSLT SMALLINT, DIAG_DATE DATE, REC_RSLT TINYINT)
+CREATE TABLE #B_DIAG_RC(GUID_Case UNIQUEIDENTIFIER,DIAG_TIP TINYINT,DIAG_CODE SMALLINT, DIAG_RSLT SMALLINT, DIAG_DATE DATE, REC_RSLT TINYINT,SL_ID UNIQUEIDENTIFIER,)
 CREATE TABLE #B_PROT_RC(GUID_Case UNIQUEIDENTIFIER,PROT TINYINT,D_PROT DATE)
 
 --16.07.2018
@@ -961,7 +961,8 @@ create table #ONK_USL_RC
 		LUCH_TIP TINYINT,
 		PPTR TINYINT
    )      
-create table #CONS_RC(Guid_Case uniqueidentifier,PR_CONS TINYINT, DT_CONS DATE)
+create table #CONS_RC(SL_ID UNIQUEIDENTIFIER,Guid_Case uniqueidentifier,PR_CONS TINYINT, DT_CONS DATE)
+
 create table #LEK_PR_RC
 	(
 		GUID_Case UNIQUEIDENTIFIER,		
@@ -1157,9 +1158,9 @@ end
 				insert @et VALUES(588,106)
 			END  
 			 
-             
-			IF EXISTS(SELECT * FROM #B_DIAG_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C  WHERE t.DIAG_TIP IS NOT NULL
-						AND  NOT EXISTS(SELECT * FROM #B_DIAG k WHERE t.GUID_Case=k.ID_C AND k.DIAG_DATE=t.DIAG_DATE
+            -----------------------------------B_DIAG------------------ 
+			IF EXISTS(SELECT * FROM #B_DIAG_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C  AND tt.SL_ID = t.SL_ID WHERE t.DIAG_TIP IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #B_DIAG k WHERE t.GUID_Case=k.ID_C AND k.SL_ID=t.SL_ID AND k.DIAG_DATE=t.DIAG_DATE
 																		AND k.DIAG_CODE=t.DIAG_CODE and k.DIAG_TIP=t.DIAG_TIP
 																		and ISNULL(k.DIAG_RSLT,0)=ISNULL(t.DIAG_RSLT,0) 	 																		
 																		AND ISNULL(k.REC_RSLT,10)=ISNULL(t.REC_RSLT,10)
@@ -1170,7 +1171,7 @@ end
 			END  		
 			
 			IF EXISTS(SELECT * FROM #B_DIAG t WHERE t.DIAG_TIP IS NOT NULL  
-						AND  NOT EXISTS(SELECT * FROM #B_DIAG_RC k WHERE k.GUID_Case=t.ID_C AND k.DIAG_DATE=t.DIAG_DATE and k.DIAG_TIP=t.DIAG_TIP
+						AND  NOT EXISTS(SELECT * FROM #B_DIAG_RC k WHERE k.GUID_Case=t.ID_C AND k.SL_ID=t.SL_ID AND k.DIAG_DATE=t.DIAG_DATE and k.DIAG_TIP=t.DIAG_TIP
 																		AND k.DIAG_CODE=t.DIAG_CODE
 																		and ISNULL(k.DIAG_RSLT,0)=ISNULL(t.DIAG_RSLT,0) 																		
 																		AND ISNULL(k.REC_RSLT,10)=ISNULL(t.REC_RSLT,10)                                                                                          
@@ -1179,6 +1180,21 @@ end
 			BEGIN 			
 				insert @et values(588,108)
 			END 
+			-----------------CONS-------------------------------
+			IF EXISTS(SELECT * FROM #CONS_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C AND tt.SL_ID = t.SL_ID  WHERE t.PR_CONS IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #CONS k WHERE t.GUID_Case=k.ID_C AND k.PR_CONS=t.PR_CONS AND k.SL_ID=t.SL_ID)
+					)
+			BEGIN 			
+				insert @et values(588,1077)
+			END  	
+
+			IF EXISTS(SELECT * FROM #CONS t WHERE t.PR_CONS IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #CONS_RC k WHERE k.GUID_Case=t.ID_C AND k.PR_CONS=t.PR_CONS AND k.SL_ID=t.SL_ID)
+					)
+			BEGIN 			
+				insert @et values(588,1078)
+			END  	
+			
 		
 
 			IF EXISTS(SELECT * FROM #B_PROT_RC t INNER JOIN /*B_PROT*/ #t5 tt ON t.GUID_Case=tt.ID_C WHERE t.PROT IS NOT NULL AND  NOT EXISTS(SELECT * FROM #B_PROT k WHERE t.GUID_Case=k.ID_C AND k.PROT=t.PROT AND k.D_PROT=t.D_PROT))

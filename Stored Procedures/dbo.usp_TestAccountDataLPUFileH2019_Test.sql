@@ -944,7 +944,7 @@ CREATE TABLE #ONK_SL_RC
 						HEI TINYINT,
 						BSA DECIMAL(3,2)	
 						 )
-CREATE TABLE #B_DIAG_RC(GUID_Case UNIQUEIDENTIFIER,DIAG_TIP TINYINT,DIAG_CODE SMALLINT, DIAG_RSLT SMALLINT, DIAG_DATE DATE, REC_RSLT TINYINT)
+CREATE TABLE #B_DIAG_RC(GUID_Case UNIQUEIDENTIFIER,DIAG_TIP TINYINT,DIAG_CODE SMALLINT, DIAG_RSLT SMALLINT, DIAG_DATE DATE, REC_RSLT TINYINT,SL_ID UNIQUEIDENTIFIER,)
 CREATE TABLE #B_PROT_RC(GUID_Case UNIQUEIDENTIFIER,PROT TINYINT,D_PROT DATE)
 
 --16.07.2018
@@ -961,7 +961,8 @@ create table #ONK_USL_RC
 		LUCH_TIP TINYINT,
 		PPTR TINYINT
    )      
-create table #CONS_RC(Guid_Case uniqueidentifier,PR_CONS TINYINT, DT_CONS DATE)
+create table #CONS_RC(SL_ID UNIQUEIDENTIFIER,Guid_Case uniqueidentifier,PR_CONS TINYINT, DT_CONS DATE)
+
 create table #LEK_PR_RC
 	(
 		GUID_Case UNIQUEIDENTIFIER,		
@@ -1097,9 +1098,9 @@ end
 			BEGIN 			
 				insert @et values(588,100)
 			END     						-------удалить условие 27.02.2019------------
-			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E' AND  NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
+			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
 			BEGIN 			
-				insert @et values(588,101)
+				INSERT @et values(588,101)
 			END  
 			IF EXISTS(SELECT * FROM #t5 t WHERE (t.P_CEL IS NOT NULL OR t.DN IS NOT NULL) AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k 
 																										  WHERE k.GUID_Case=t.ID_C AND ISNULL(k.P_CEL,'bla')=ISNULL(t.P_CEL,'bla')  
@@ -1157,9 +1158,9 @@ end
 				insert @et VALUES(588,106)
 			END  
 			 
-             
-			IF EXISTS(SELECT * FROM #B_DIAG_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C  WHERE t.DIAG_TIP IS NOT NULL
-						AND  NOT EXISTS(SELECT * FROM #B_DIAG k WHERE t.GUID_Case=k.ID_C AND k.DIAG_DATE=t.DIAG_DATE
+            -----------------------------------B_DIAG------------------ 
+			IF EXISTS(SELECT * FROM #B_DIAG_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C  AND tt.SL_ID = t.SL_ID WHERE t.DIAG_TIP IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #B_DIAG k WHERE t.GUID_Case=k.ID_C AND k.SL_ID=t.SL_ID AND k.DIAG_DATE=t.DIAG_DATE
 																		AND k.DIAG_CODE=t.DIAG_CODE and k.DIAG_TIP=t.DIAG_TIP
 																		and ISNULL(k.DIAG_RSLT,0)=ISNULL(t.DIAG_RSLT,0) 	 																		
 																		AND ISNULL(k.REC_RSLT,10)=ISNULL(t.REC_RSLT,10)
@@ -1170,7 +1171,7 @@ end
 			END  		
 			
 			IF EXISTS(SELECT * FROM #B_DIAG t WHERE t.DIAG_TIP IS NOT NULL  
-						AND  NOT EXISTS(SELECT * FROM #B_DIAG_RC k WHERE k.GUID_Case=t.ID_C AND k.DIAG_DATE=t.DIAG_DATE and k.DIAG_TIP=t.DIAG_TIP
+						AND  NOT EXISTS(SELECT * FROM #B_DIAG_RC k WHERE k.GUID_Case=t.ID_C AND k.SL_ID=t.SL_ID AND k.DIAG_DATE=t.DIAG_DATE and k.DIAG_TIP=t.DIAG_TIP
 																		AND k.DIAG_CODE=t.DIAG_CODE
 																		and ISNULL(k.DIAG_RSLT,0)=ISNULL(t.DIAG_RSLT,0) 																		
 																		AND ISNULL(k.REC_RSLT,10)=ISNULL(t.REC_RSLT,10)                                                                                          
@@ -1179,8 +1180,23 @@ end
 			BEGIN 			
 				insert @et values(588,108)
 			END 
-		
+			-----------------CONS-------------------------------
+			IF EXISTS(SELECT * FROM #CONS_RC t INNER JOIN #t5 tt ON t.GUID_Case=tt.ID_C AND tt.SL_ID = t.SL_ID  WHERE t.PR_CONS IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #CONS k WHERE t.GUID_Case=k.ID_C AND k.PR_CONS=t.PR_CONS AND k.SL_ID=t.SL_ID)
+					)
+			BEGIN 			
+				insert @et values(588,1077)
+			END  	
 
+			IF EXISTS(SELECT * FROM #CONS t WHERE t.PR_CONS IS NOT NULL
+						AND  NOT EXISTS(SELECT * FROM #CONS_RC k WHERE k.GUID_Case=t.ID_C AND k.PR_CONS=t.PR_CONS AND k.SL_ID=t.SL_ID)
+					)
+			BEGIN 			
+				insert @et values(588,1078)
+			END  	
+			
+		
+			----------------------------B_PROT---------------------------
 			IF EXISTS(SELECT * FROM #B_PROT_RC t INNER JOIN /*B_PROT*/ #t5 tt ON t.GUID_Case=tt.ID_C WHERE t.PROT IS NOT NULL AND  NOT EXISTS(SELECT * FROM #B_PROT k WHERE t.GUID_Case=k.ID_C AND k.PROT=t.PROT AND k.D_PROT=t.D_PROT))
 			BEGIN 			
 				insert @et values(588,109)
@@ -1477,84 +1493,6 @@ begin
 			AND ISNULL(t.DOCDATE,'22220101')=ISNULL(t1.DOCDATE,'22220101')
 			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
 
-			SELECT t1.*
-			from(
-			select distinct r1.ID_Patient,rp.Fam,rp.Im,rp.Ot,rp.rf_idV005 as W,rp.BirthDay as DR,ra.Fam as Fam_P, ra.Im as IM_P, ra.Ot as Ot_P,ra.rf_idV005 as W_P,
-				  ra.BirthDay as DR_P, rp.BirthPlace as MR, doc.rf_idDocumentType as DOCTYPE, doc.SeriaDocument as DOCSER, doc.NumberDocument as DOCNUM, 
-				  doc.SNILS, doc.OKATO as OKATOG, doc.OKATO_Place as OKATOP, rp.TEL, doc.DOCDATE,doc.DOCORG
-			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
-				f.id=a.rf_idFilesBack
-				and f.rf_idFiles=@idF			
-									inner join RegisterCases.dbo.t_RecordCaseBack r on
-				a.id=r.rf_idRegisterCaseBack
-									INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
-				r.id=cp.rf_idRecordCaseBack					
-				and cp.TypePay=1
-									inner join RegisterCases.dbo.t_RecordCase r1 on
-				r.rf_idRecordCase=r1.id
-									inner join RegisterCases.dbo.t_PatientBack p on
-				r.id=p.rf_idRecordCaseBack
-				and p.rf_idSMO=@smo
-									inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
-				r1.id=rf.rf_idRecordCase
-									inner join RegisterCases.dbo.t_RegisterPatient rp on
-				rf.rf_idRegisterPatient=rp.id
-				and rp.rf_idFiles=@idF
-									left join RegisterCases.dbo.t_RegisterPatientAttendant ra on
-				rp.id=ra.rf_idRegisterPatient
-									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
-				rp.id=doc.rf_idRegisterPatient
-		) t right join #t8 t1 on
-			t.ID_Patient=t1.ID_PAC
-			and ISNULL(t.FAM,'НЕТ') =ISNULL(t1.FAM,'НЕТ') 
-			and ISNULL(t.IM,'НЕТ') =ISNULL(t1.IM,'НЕТ') 
-			and ISNULL(t.OT,'НЕТ')=ISNULL(t1.OT,'НЕТ')
-			and t.W =t1.W 
-			and t.DR =t1.DR 
-			and isnull(t.FAM_P,'')=isnull(t1.FAM_P,'')
-			and isnull(t.IM_P,'')=isnull(t1.IM_p,'')
-			and isnull(t.OT_P,'') =isnull(t1.OT_P,'') 
-			--and isnull(t.W_P,'') =isnull(t1.W_P,'') 
-			and isnull(t.DR_P,'') =isnull(t1.DR_P,'') 
-			and isnull(t.MR,'') =isnull(t1.MR,'') 
-			and isnull(t.DOCTYPE,'')=isnull(t1.DOCTYPE,'')
-			and isnull(t.DOCSER,'') =isnull(t1.DOCSER,'') 
-			and isnull(t.DOCNUM,'') =isnull(t1.DOCNUM,'') 
-			and isnull(t.SNILS,'') =isnull(t1.SNILS,'') 
-			and isnull(t.OKATOG,'') =isnull(t1.OKATOG,'') 
-			and isnull(t.OKATOP,'') =isnull(t1.OKATOP,'') 
-			AND ISNULL(t.TEL,'bla-bla')=ISNULL(t1.TEL,'bla-bla')
-			AND ISNULL(t.DOCDATE,'22220101')=ISNULL(t1.DOCDATE,'22220101')
-			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
-		WHERE t.ID_Patient IS NULL
-        
-		select distinct r1.ID_Patient,rp.Fam,rp.Im,rp.Ot,rp.rf_idV005 as W,rp.BirthDay as DR,ra.Fam as Fam_P, ra.Im as IM_P, ra.Ot as Ot_P,ra.rf_idV005 as W_P,
-				  ra.BirthDay as DR_P, rp.BirthPlace as MR, doc.rf_idDocumentType as DOCTYPE, doc.SeriaDocument as DOCSER, doc.NumberDocument as DOCNUM, 
-				  doc.SNILS, doc.OKATO as OKATOG, doc.OKATO_Place as OKATOP, rp.TEL, doc.DOCDATE,doc.DOCORG
-			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
-				f.id=a.rf_idFilesBack
-				and f.rf_idFiles=@idF			
-									inner join RegisterCases.dbo.t_RecordCaseBack r on
-				a.id=r.rf_idRegisterCaseBack
-									INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
-				r.id=cp.rf_idRecordCaseBack					
-				and cp.TypePay=1
-									inner join RegisterCases.dbo.t_RecordCase r1 on
-				r.rf_idRecordCase=r1.id
-									inner join RegisterCases.dbo.t_PatientBack p on
-				r.id=p.rf_idRecordCaseBack
-				and p.rf_idSMO=@smo
-									inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
-				r1.id=rf.rf_idRecordCase
-									inner join RegisterCases.dbo.t_RegisterPatient rp on
-				rf.rf_idRegisterPatient=rp.id
-				and rp.rf_idFiles=@idF
-									left join RegisterCases.dbo.t_RegisterPatientAttendant ra on
-				rp.id=ra.rf_idRegisterPatient
-									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
-				rp.id=doc.rf_idRegisterPatient
-			WHERE r1.ID_Patient='FB4126A7-0418-4683-8BC5-9B95908BF829'
-
 	select @persA=COUNT(*) from #t8
 
 	if(@persA-@persRC)<>0	
@@ -1567,14 +1505,10 @@ end
 --возвращаем @idFile и 0 или 1 отличное от нуля(0- ошибок нету,  1-ошибки есть)
 IF EXISTS (select * from @et)
 begin
-		
 	select distinct @idFile,errorId,id from @et	
 	
+	
 END
-ELSE
-BEGIN
-		SELECT 'Good'
-end
 
 --------------------------------------------
 if OBJECT_ID('tempDB..#case',N'U') is not null

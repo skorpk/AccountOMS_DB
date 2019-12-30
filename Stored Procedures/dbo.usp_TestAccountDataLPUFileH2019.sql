@@ -1098,7 +1098,7 @@ end
 			BEGIN 			
 				insert @et values(588,100)
 			END     						-------удалить условие 27.02.2019------------
-			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E' AND  NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
+			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND  NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
 			BEGIN 			
 				insert @et values(588,101)
 			END  

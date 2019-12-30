@@ -916,7 +916,45 @@ begin
 	begin
 		insert @et values(588,20)
 	end	
-end
+END
+-----------------------DOST---------------------------
+		 DECLARE @ddRC INT,
+				@ddA INT
+                
+		 SELECT @ddRC=COUNT(*)
+		 FROM (
+				 SELECT distinct r1.ID_Patient,rl.TypeReliability,rl.IsAttendant		
+					from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+						f.id=a.rf_idFilesBack
+						and f.rf_idFiles=@idF			
+											inner join RegisterCases.dbo.t_RecordCaseBack r on
+						a.id=r.rf_idRegisterCaseBack
+											INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+						r.id=cp.rf_idRecordCaseBack					
+						and cp.TypePay=1
+											inner join RegisterCases.dbo.t_RecordCase r1 on
+						r.rf_idRecordCase=r1.id
+											inner join RegisterCases.dbo.t_PatientBack p on
+						r.id=p.rf_idRecordCaseBack
+						and p.rf_idSMO=@smo
+											inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
+						r1.id=rf.rf_idRecordCase
+											inner join RegisterCases.dbo.t_RegisterPatient rp on
+						rf.rf_idRegisterPatient=rp.id
+						and rp.rf_idFiles=@idF
+											inner join RegisterCases.dbo.t_ReliabilityPatient rl ON
+				             rp.id=rl.rf_idRegisterPatient
+				) t INNER JOIN #tDost d ON
+				t.ID_Patient=d.ID_PAC
+				AND t.TypeReliability=d.DOST
+
+				SELECT @ddA=COUNT(*) FROM #tDost
+         IF(@ddA<>@ddRC)       
+		 BEGIN 
+			insert @et values(588,135)
+		 end
+											
+		
 -------------------------------------------------------------------------------------------------------
 
 --возвращаем @idFile и 0 или 1 отличное от нуля(0- ошибок нету,  1-ошибки есть)

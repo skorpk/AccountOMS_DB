@@ -214,7 +214,7 @@ create table #t8
 	COMENTP nvarchar(250)
 )
 
-CREATE TABLE #tDost(ID_PAC nvarchar(36),DOST TINYINT, IsAttendant BIT)
+CREATE TABLE #tDost(ID_PAC nvarchar(36),DOST TINYINT, IsAttendant TINYINT)
 
 declare @tempID as table(id int, ID_PAC nvarchar(36),N_ZAP int)
 
@@ -645,11 +645,11 @@ FROM OPENXML (@ipatient, 'PERS_LIST/PERS/DOST',2)
 		)
 
 INSERT #tDOST(ID_PAC, DOST,IsAttendant)				
-SELECT DISTINCT ID_PAC,DOST,2
+SELECT DISTINCT ID_PAC,DOST_P,2
 FROM OPENXML (@ipatient, 'PERS_LIST/PERS/DOST_P',2)
 	WITH(
 			ID_PAC NVARCHAR(36) '../ID_PAC',
-			DOST TINYINT 'text()'
+			DOST_P TINYINT 'text()'
 		)  
 EXEC sp_xml_removedocument @ipatient
 --раскладываем данные по таблица в базе счета

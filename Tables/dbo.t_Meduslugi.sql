@@ -22,9 +22,11 @@ CREATE TABLE [dbo].[t_Meduslugi]
 [Comments] [nvarchar] (250) COLLATE Cyrillic_General_CI_AS NULL,
 [MUSurgery] [varchar] (20) COLLATE Cyrillic_General_CI_AS NULL,
 [MU] AS ((((CONVERT([varchar](2),[MUGroupCode],(0))+'.')+CONVERT([varchar](2),[MUUnGroupCode],(0)))+'.')+CONVERT([varchar](3),[MUCode],(0))),
-[MUInt] AS (([MUGroupCode]*(100000)+[MUUnGroupCode]*(1000))+[MUCode]),
+[MUInt] AS (([MUGroupCode]*(100000)+([MUUnGroupCode]*(1000)))+[MUCode]),
 [IsNeedUsl] [tinyint] NULL
 ) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [IX_MU_Case] ON [dbo].[t_Meduslugi] ([MU]) INCLUDE ([rf_idCase]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_MU_IdCase] ON [dbo].[t_Meduslugi] ([MUGroupCode], [MUUnGroupCode]) INCLUDE ([rf_idCase]) ON [AccountMU]
 GO

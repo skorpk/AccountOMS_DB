@@ -160,32 +160,34 @@ FROM (
 		UNION all
 		SELECT 0,0,0,0,COUNT(DISTINCT ENP) AS Col12,0,0,0,0
 		FROM (			
-	SELECT c.ENP
-				FROM (SELECT enp, MIN(DateBegin) AS DateEnd
+				SELECT c.ENP
+				FROM (SELECT enp, MIN(DateEnd) AS DateEnd
 					  FROM #tCases 
 					  WHERE TypeFile='H' AND Age>18 AND AmountPay>0 
 					  GROUP BY ENP
-					 ) c INNER JOIN #tCasesD c1 ON
-						c.ENP=c1.ENP   				         
-				WHERE c1.Letter IN('O','R') AND c1.AmountPay>0 /*AND dd.IsOnko=1*/ AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
-						AND c1.DateBegin<=c.DateEnd
-				UNION ALL				
+							) c INNER JOIN #tCases c1 ON
+						c.ENP=c1.ENP                              
+				WHERE c1.Letter IN('O','R') AND c1.AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+						AND c1.DateEnd<=c.DateEnd
+				UNION ALL
 				SELECT ENP
-				FROM #tCases c
+				FROM #tCases c INNER JOIN t_Case cc ON
+						c.rf_idCase=cc.id						
 				WHERE c.Letter IN('F','D','U') AND c.Age<18 AND AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
 				UNION ALL
 				SELECT c.ENP
-				FROM (SELECT enp, MIN(DateBegin) AS DateEnd
+				FROM (SELECT enp, MIN(DateEnd) AS DateEnd
 					  FROM #tCases 
 					  WHERE TypeFile='H' AND Age<18 AND AmountPay>0 
 					  GROUP BY ENP
-							) c INNER JOIN #tCasesD c1 ON
+							) c INNER JOIN #tCases c1 ON
 						c.ENP=c1.ENP                              
 								INNER JOIN t_DispInfo dd ON
 						c1.rf_idCase=dd.rf_idCase                              
-				WHERE c1.Letter ='F' AND c1.AmountPay>0 and dd.TypeDisp='ОН1' AND dd.TypeFailure=1 --AND dd.IsOnko=1
+				WHERE c1.Letter ='U' AND c1.AmountPay>0 and dd.TypeDisp='ОН1' AND dd.TypeDisp=1 AND dd.IsOnko=1
 						AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
-				AND c1.DateBegin<=c.DateEnd				
+				AND c1.DateEnd<=c.DateEnd
+								            
 			) t
 		UNION ALL
 		SELECT 0,0,0,0,0,COUNT(DISTINCT ENP) AS Col13,0,0,0

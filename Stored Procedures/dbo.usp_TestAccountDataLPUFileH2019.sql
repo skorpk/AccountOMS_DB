@@ -783,9 +783,10 @@ begin
 	
 	select @zapRC=COUNT(*)
 	from (
-			select cast(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
+			select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
 					,p.NumberPolis
-					,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
 					,p.OKATO
 					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
 					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
@@ -809,12 +810,7 @@ begin
 							--and p.rf_idSMO=@smo
 												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
 							r.rf_idCase=att.rf_idCase
-			GROUP BY cast(r1.ID_Patient as nvarchar(36)),p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'')
-					,p.NumberPolis
-					,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END 
-					,p.OKATO,cast(r1.NewBorn as nvarchar(9)) 
-					,CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end,r1.BirthWeight,p.ENP
-					,r1.IsNew, r1.MSE
+			
 		  ) r inner join #t3 t on
 					r.ID_Patient=t.ID_PAC
 					and r.rf_idF008=t.VPOLIS

@@ -4,13 +4,13 @@ SET ANSI_NULLS ON
 GO
 CREATE PROCEDURE [dbo].[usp_260GetVMP]
 as
-DECLARE @dateStart DATETIME='20190101',	--всегда с начало года
+DECLARE @dateStart DATETIME='20200101',	--всегда с начало года
 		@dateEnd DATETIME=GETDATE(),
-		@reportYear SMALLINT=2019,
+		@reportYear SMALLINT=2020,
 		@reportMonth TINYINT,--отчетный месяц ставим сами т.к. случаи отбираем с начало года
 		@fileName VARCHAR(26)='TT34_'
 
-SELECT @reportMonth=(MAX([MONTH])+1) FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND IsUnload=1
+SELECT @reportMonth=(ISNULL(MAX([MONTH]),0)+1) FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND IsUnload=1
 
 SELECT DiagnosisCode INTO #tD FROM dbo.vw_sprMKB10 WHERE MainDS LIKE 'D0_' OR MainDS LIKE 'C__'
 
@@ -27,7 +27,7 @@ BEGIN
 	WHERE [Year]=@reportYear AND [MONTH]=@reportMonth
 END
 -------------------------------------------------------------------------------------------------------------
-SELECT f.id, r.id AS rf_idRecordCasePatient, cc.AmountPayment,c.id AS rf_idCase, c.AmountPayment AS SUM_M 
+SELECT f.id, r.id AS rf_idRecordCasePatient, cc.AmountPayment,c.id AS rf_idCase, c.AmountPayment AS SUM_M, CAST(0.0 AS decimal(15,2)) AS AmountPayment2 
 INTO #tCases
 FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			f.id=a.rf_idFiles
@@ -55,7 +55,7 @@ WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.Report
 		AND c.rf_idV006<4 AND c.rf_idV008=32 
 		AND NOT EXISTS(SELECT 1 FROM dbo.t_260order_VMP WHERE rf_idCase=c.id) 
 
-UPDATE p SET p.AmountPayment=p.AmountPayment-r.AmountDeduction
+UPDATE p SET p.AmountPayment2=p.AmountPayment-r.AmountDeduction
 FROM #tCases p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDeduction
 								FROM dbo.t_PaymentAcceptedCase2 c
 								WHERE c.DateRegistration>=@dateStart AND c.DateRegistration<@dateEnd	
@@ -108,7 +108,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear 
 		AND c.rf_idV006<4 AND c.rf_idV008=32 
 		AND NOT EXISTS(SELECT 1 FROM dbo.t_260order_VMP WHERE rf_idCase=c.id) 
-		AND t.AmountPayment>0.0
+		AND t.AmountPayment2>0.0
 --простовляю код СМО иногородним
 UPDATE v SET v.CodeSMO34= m.SMOKOD
 FROM RegisterCases.dbo.t_RecordCase r INNER JOIN RegisterCases.dbo.t_Case c ON
@@ -122,7 +122,7 @@ FROM RegisterCases.dbo.t_RecordCase r INNER JOIN RegisterCases.dbo.t_Case c ON
 			AND z.OKATO=m.TF_OKATO
 						INNER JOIN dbo.t_260order_VMP v ON
 			r.ID_Patient=v.ID_PAC 
-WHERE c.DateEnd>='20190101' AND v.rf_idSMO='34' AND v.CodeSMO34 IS NULL
+WHERE c.DateEnd>='20200101' AND v.rf_idSMO='34' AND v.CodeSMO34 IS NULL
 
 DROP TABLE #tD
 DROP TABLE #tCases

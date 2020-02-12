@@ -2,14 +2,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW dbo.View_EKSNEW
+CREATE VIEW [dbo].[View_EKSNEW]
 AS
 SELECT  SUM(ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0)) AS Eks, 
                dbo.t_Case.id
 FROM     dbo.t_PaymentAcceptedCase2 RIGHT OUTER JOIN
                dbo.t_Case ON dbo.t_PaymentAcceptedCase2.rf_idCase = dbo.t_Case.id
-WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2018-06-01 00:00:00', 102) AND CONVERT(DATETIME, '2018-07-11 00:00:00', 102)) AND 
-               (dbo.t_Case.DateEnd BETWEEN CONVERT(DATETIME, '2018-06-01 00:00:00', 102) AND CONVERT(DATETIME, '2018-06-30 00:00:00', 102))
+WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2019-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-01-20 00:00:00', 102)) AND 
+               (dbo.t_PaymentAcceptedCase2.Letter = 'r')
 GROUP BY dbo.t_Case.id, dbo.t_Case.AmountPayment
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
@@ -124,7 +124,7 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 12
-         Column = 3342
+         Column = 4469
          Alias = 3369
          Table = 1168
          Output = 720

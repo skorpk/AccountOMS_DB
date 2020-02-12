@@ -783,9 +783,10 @@ begin
 	
 	select @zapRC=COUNT(*)
 	from (
-			select cast(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
+			SELECT distinct cast(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
 					,p.NumberPolis
-					,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
 					,p.OKATO
 					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
 					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
@@ -809,25 +810,22 @@ begin
 							--and p.rf_idSMO=@smo
 												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
 							r.rf_idCase=att.rf_idCase
-			GROUP BY cast(r1.ID_Patient as nvarchar(36)),p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'')
-					,p.NumberPolis
-					,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END 
-					,p.OKATO,cast(r1.NewBorn as nvarchar(9)) 
-					,CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end,r1.BirthWeight,p.ENP
-					,r1.IsNew, r1.MSE
+			
 		  ) r inner join #t3 t on
 					r.ID_Patient=t.ID_PAC
 					and r.rf_idF008=t.VPOLIS
 					and r.SeriaPolis=COALESCE(t.SPOLIS,'')
 					and r.NumberPolis=t.NPOLIS
-					and r.rf_idSMO=t.SMO
+					and LTRIM(r.rf_idSMO)=LTRIM(t.SMO)
 					and r.OKATO=COALESCE(t.SMO_OK,'18000')
 					and r.NewBorn=t.NOVOR
 					and isnull(r.MO_PR,'000000')=t.MO_PR
 					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
 					AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
-					AND r.IsNew=t.PR_NOV					
-	if(@zapRC-@zapA)<>0	
+					AND r.IsNew=t.PR_NOV			
+					
+
+		if(@zapRC-@zapA)<>0	
 	begin
 		insert @et values(588,13)
 	end	
@@ -1028,6 +1026,55 @@ end
 			t1.SL_ID =k.SL_ID
 			WHERE COALESCE(t1.Code_Mes1,k.N_KSG,'0')=isnull(t.MES,'0') AND ISNULL(t.IT_SL,9)=ISNULL(k.IT_SL,9)
 			
+			select t1.ID_C,t.GUID_Case
+	from #case t right join #t5 t1 on
+			ID_PAC=upper(t.ID_Patient) 
+			and t1.ID_C=t.GUID_Case
+			and USL_OK=t.rf_idV006 
+			and VIDPOM=t.rf_idV008
+			AND ISNULL(FOR_POM,0)=ISNULL(t.rf_idV014,0)			
+			AND ISNULL(VID_HMP,'bla-bla')=ISNULL(t.rf_idV018,'bla-bla')			
+			AND ISNULL(METOD_HMP,0)=ISNULL(t.rf_idV019,0)			
+			--and isnull(NPR_MO,0)=isnull(t.rf_idDirectMO,0)
+			and isnull(EXTR,0)=isnull(t.HopitalisationType,0)
+			and LPU=t.rf_idMO
+			and PROFIL=t.rf_idV002
+			and DET =t.IsChildTariff
+			and NHISTORY =NumberHistoryCase
+			and DATE_1=DateBegin
+			and DATE_2=DateEnd
+			and isnull(t1.DS0,0)=isnull(t.DS0,0)
+			and t1.DS1=t.DS1						
+			and RSLT=t.rf_idV009  
+			and ISHOD=t.rf_idV012  
+			and PRVS=t.rf_idV004  
+			and isnull(OS_SLUCH,0)=isnull(t.IsSpecialCase,0)
+			and IDSP=t.rf_idV010  
+			and isnull(ED_COL,0)=ISNULL(t.Quantity,0) 
+			and isnull(TARIF ,0)=ISNULL(t.Tariff,0) 
+			and ISNULL(t.[Emergency],0)=ISNULL(t1.F_SP,0)
+			AND ISNULL(t.Comments,'bla-bla')=ISNULL(t1.COMENTSL,'bla-bla')
+			--AND ISNULL(t.IT_SL,9)=ISNULL(t1.IT_SL,9)
+			AND ISNULL(t.P_PER,9)=ISNULL(t1.P_PER,9)
+			AND ISNULL(t.IDDOCT,0) =t1.IDDOCT
+			AND ISNULL(t.rf_idSubMO,'bla-bla')=ISNULL(t1.LPU_1,'bla-bla')
+			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t1.PODR,0)
+			AND ISNULL(t.MSE,0)=ISNULL(t1.MSE,0)
+			AND ISNULL(t.C_ZAB,0)=ISNULL(t1.C_ZAB,0)
+			AND ISNULL(t.DS_ONK,0)=ISNULL(t1.DS_ONK,0)			
+			AND t.AmountPayment=t1.SUM_M
+			AND t1.SL_ID=t.SL_ID
+			AND ISNULL(t.VB_P,10)=ISNULL(t1.VB_P,10)
+			AND t.DATE_Z_1=t1.DATE_Z_1
+			AND t.DATE_Z_2=t1.DATE_Z_2
+			AND ISNULL(t.KD_Z,1000)=ISNULL(t1.KD_Z,1000)
+			AND t.SUMV=t1.SUMV
+			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
+		WHERE t.GUID_Case IS null
+
+			
+			SELECT * FROM #case WHERE GUID_Case='2174986B-58EE-4ABD-9AE0-187A9DCD476C'
+			SELECT * FROM #t5 WHERE ID_C='2174986B-58EE-4ABD-9AE0-187A9DCD476C'
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))
 			BEGIN 			
@@ -1044,6 +1091,7 @@ end
 			begin
 				IF EXISTS(SELECT * FROM #tBW b WHERE NOT EXISTS(SELECT * FROM #tBirthWeight WHERE GUID_Case=b.ID_C AND VNOV_M=b.BirthWeight))
 				BEGIN 			
+					
 					insert @et values(588,15)
 				END
 			end
@@ -1107,6 +1155,9 @@ end
 																												AND ISNULL(k.DN,0)=ISNULL(t.DN,0) )	)
 			BEGIN 			
 				insert @et values(588,102)
+				SELECT * FROM #t5 t WHERE (t.P_CEL IS NOT NULL OR t.DN IS NOT NULL) AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k 
+																										  WHERE k.GUID_Case=t.ID_C AND ISNULL(k.P_CEL,'bla')=ISNULL(t.P_CEL,'bla')  
+																												AND ISNULL(k.DN,0)=ISNULL(t.DN,0) )
 			END     
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.DN IS NOT NULL AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k WHERE k.GUID_Case=t.ID_C AND k.DN=t.DN))
 			BEGIN 			
@@ -1274,7 +1325,7 @@ end
 				insert @et values(588,118)
 			END  
 			-------------проверка случаев в счетах и на то должны ли они быть
-			
+			SELECT isnull(@caseRC,0),ISNULL(@caseA,0)
 			if(isnull(@caseRC,0)-isnull(@caseA,0))<>0
 			begin
 				insert @et values(588,15)

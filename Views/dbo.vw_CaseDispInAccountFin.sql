@@ -4,9 +4,10 @@ SET ANSI_NULLS ON
 GO
 
 
+
 CREATE VIEW [dbo].[vw_CaseDispInAccountFin]
 AS
-SELECT f.DateRegistration,f.CodeM,a.NumberRegister,ps.ENP,a.ReportYear,d.TypeDisp, c.id,(c.AmountPayment-pc.AmountDeduction) AS AmountPay
+SELECT f.DateRegistration,f.CodeM,a.NumberRegister,ps.ENP,a.ReportYear,v.TypeDisp, c.id,(c.AmountPayment-pc.AmountDeduction) AS AmountPay
 FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			f.id=a.rf_idFiles
 					INNER JOIN dbo.t_RecordCasePatient r ON
@@ -17,14 +18,16 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			r.id=c.rf_idRecordCasePatient
 					 INNER JOIN dbo.t_DispInfo d ON
 			c.id=d.rf_idCase
+					INNER JOIN (VALUES('ДВ2','ДВ2'),('ДВ1','ДВ'),('ДВ4','ДВ'),('ОПВ','ДВ'),('ДC1','ДC'),('ДУ1','ДC'),('ДУ2','ДC')) v(id,TypeDisp) ON
+            d.TypeDisp=v.id
 					INNER JOIN (
 								SELECT f.rf_idCase,SUM(AmountDeduction) AS AmountDeduction
 								FROM dbo.t_PaymentAcceptedCase2	f
-								WHERE f.DateRegistration>='20170101' AND f.DateRegistration<=GETDATE()
+								WHERE f.DateRegistration>='20200101' AND f.DateRegistration<=GETDATE()
 								GROUP BY f.rf_idCase
 								)  pc ON
 			c.id=pc.rf_idCase                  
-WHERE f.DateRegistration>'20170101' AND c.DateEnd>'20161231' and d.TypeDisp IN('ДВ1','ДВ2','ОПВ') AND (c.AmountPayment-pc.AmountDeduction)>0
+WHERE f.DateRegistration>'20200101' AND c.DateEnd>'20191231' AND (c.AmountPayment-pc.AmountDeduction)>0
 
 
 GO

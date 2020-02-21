@@ -6,7 +6,7 @@ CREATE PROCEDURE [dbo].[usp_InsertCaseUnitCodeQuantity]
 		@dtBegin DATETIME,	
 		@reportYear SMALLINT
 as
-DECLARE @dtEndReg DATE=GETDATE()
+DECLARE @dtEndReg DATETIME=GETDATE()
 CREATE TABLE #tmpCases
 					(id INT,
 					 DateRegistration DATETIME,

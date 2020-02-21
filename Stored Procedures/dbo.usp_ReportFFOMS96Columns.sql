@@ -156,7 +156,7 @@ FROM (
 		UNION ALL
 		SELECT 0,0,0,COUNT(DISTINCT ENP) AS Col11,0,0,0,0,0
 		FROM #tCases c 
-		WHERE AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)				
+		WHERE AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1) )				
 		UNION all
 		SELECT 0,0,0,0,COUNT(DISTINCT ENP) AS Col12,0,0,0,0
 		FROM (			
@@ -167,13 +167,13 @@ FROM (
 					  GROUP BY ENP
 							) c INNER JOIN #tCases c1 ON
 						c.ENP=c1.ENP                              
-				WHERE c1.Letter IN('O','R') AND c1.AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+				WHERE c1.Letter IN('O','R') AND c1.AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
 						AND c1.DateEnd<=c.DateEnd
 				UNION ALL
 				SELECT ENP
 				FROM #tCases c INNER JOIN t_Case cc ON
 						c.rf_idCase=cc.id						
-				WHERE c.Letter IN('F','D','U') AND c.Age<18 AND AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+				WHERE c.Letter IN('F','D','U') AND c.Age<18 AND AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
 				UNION ALL
 				SELECT c.ENP
 				FROM (SELECT enp, MIN(DateEnd) AS DateEnd
@@ -185,7 +185,7 @@ FROM (
 								INNER JOIN t_DispInfo dd ON
 						c1.rf_idCase=dd.rf_idCase                              
 				WHERE c1.Letter ='U' AND c1.AmountPay>0 and dd.TypeDisp='ОН1' AND dd.TypeDisp=1 AND dd.IsOnko=1
-						AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+						AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
 				AND c1.DateEnd<=c.DateEnd
 								            
 			) t
@@ -195,7 +195,7 @@ FROM (
 
 				SELECT ROW_NUMBER() OVER(PARTITION BY c.ENP ORDER BY DateEnd desc) AS id,c.ENP,CodeSMO
 				FROM #tCases c
-				WHERE AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+				WHERE AmountPay>0 AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
 			) t
 		WHERE id=1 AND CodeSMO='34'
 		UNION ALL
@@ -209,9 +209,9 @@ FROM (
 				WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND cc.rf_idV002 IN(60,18) AND pv.DN IN(1,2)
 				UNION ALL				
 				SELECT c.ENP
-				FROM #tCases c INNER JOIN dbo.t_Case cc ON
-							c.rf_idCase=cc.id                                
-				WHERE amountPay>0 AND TypeFile='H' AND cc.IsNeedDisp IN(1,2) AND c.Letter IN('O','R','F','D','U')
+				FROM #tCases c INNER JOIN dbo.t_DS2_Info cc ON
+							c.rf_idCase=cc.rf_idCase         
+				WHERE amountPay>0 AND TypeFile='F' AND cc.IsNeedDisp IN (1,2) AND c.Letter IN('O','R','F','D','U')
 			)t
 			UNION ALL
 			SELECT 0,0,0,0,0,0,0,COUNT(DISTINCT ENP),0
@@ -221,12 +221,12 @@ FROM (
 								c.rf_idCase=pv.rf_idCase              
 									INNER JOIN dbo.t_Case cc ON
 								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP) AND cc.rf_idV006=3
+					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.rf_idV006=3
 					UNION ALL				
 					SELECT c.ENP
 					FROM #tCases c INNER JOIN dbo.t_Case cc ON
 								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='F' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP)
+					WHERE amountPay>0 AND TypeFile='F' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
 				)t
 			UNION ALL
 			SELECT 0,0,0,0,0,0,0,0,COUNT(DISTINCT ENP)
@@ -236,7 +236,7 @@ FROM (
 								c.rf_idCase=pv.rf_idCase              
 									INNER JOIN dbo.t_Case cc ON
 								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP) AND cc.rf_idV006=3
+					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.rf_idV006=3
 						 AND c.ReportMonth=@lastMonth					
 				)t
 		      
@@ -1032,7 +1032,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			r.id=c.rf_idRecordCasePatient													     
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient													   					  					      
-					INNER JOIN t_DS_ONK_REAB dd ON
+					INNER JOIN vw_DS_ONK dd ON
 			c.id=dd.rf_idCase 	
 					left JOIN dbo.t_ONK_USL u ON
 			c.id=u.rf_idCase				               
@@ -1098,7 +1098,7 @@ FROM (
 	)t
 -------------------------Колонки 49-54----------------------------------
 
-----------------------MEK Дефеты--------------------------------
+----------------------MEK Дефекты--------------------------------
 INSERT #tmpSkrybina(Col49)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col49
 FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON

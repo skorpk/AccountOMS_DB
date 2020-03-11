@@ -40,8 +40,8 @@ CREATE TABLE #tCases
 )            
 
 INSERT #tCases( rf_idCase, CodeM,AmountPayment,rf_idCompletedCase,AmountPaymentAcc,Age,rf_idV006,rf_idSMO,ENP,Sex, dn_diag )
-SELECT DISTINCT c.id, f.CodeM, c.AmountPayment,c.rf_idRecordCasePatient,c.AmountPayment, c.Age,c.rf_idV006,a.rf_idSMO,p.ENP,pp.Sex,
-				dn_diag.DiagnosisCode
+SELECT DISTINCT c.id, f.CodeM, c.AmountPayment,c.rf_idRecordCasePatient,c.AmountPayment, c.Age,c.rf_idV006,a.rf_idSMO,p.ENP,pp.Sex,diag.DiagnosisCode
+				--dn_diag.DiagnosisCode
 FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
                     f.id=a.rf_idFiles
                                   INNER JOIN dbo.t_RecordCasePatient r ON
@@ -57,8 +57,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 					c.id = pv.rf_idCase
 								  INNER JOIN dbo.t_Diagnosis diag ON
 					c.id = diag.rf_idCase
-								  LEFT JOIN oms_nsi.[dbo].[sprMKBDN] dn_diag ON
-                    dn_diag.DiagnosisCode = diag.DiagnosisCode
+					and diag.TypeDiagnosis=1
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportMonth>0 AND a.ReportMonth <=@reportMonth AND a.ReportYear=@reportYear
              AND pv.rf_idV025 = '1.3'
 			 AND c.Age>17 			 
@@ -78,6 +77,8 @@ FROM #tCases p INNER JOIN (SELECT c.rf_idCase,ISNULL(SUM(c.AmountPaymentAccept),
                                                       GROUP BY c.rf_idCase
                                                ) r ON
                     p.rf_idCase=r.rf_idCase
+
+
 
 -- RESULT
 select dmo.tfomsCode AS CodeM, dmo.mNameS, ISNULL(A.dnc, 0) AS dnc, ISNULL(A.dne, 0) AS dne

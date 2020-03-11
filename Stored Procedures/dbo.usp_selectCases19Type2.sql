@@ -17,6 +17,7 @@ CREATE PROCEDURE [dbo].[usp_selectCases19Type2]
 @Query NVARCHAR(max)=null
     
 AS 
+
 IF ( @p_AccountCode IS NOT NULL ) 
 	BEGIN
 	CREATE TABLE #t_tmpAccs ( id INT, rf_idFiles INT, rf_idSMO char(5) )
@@ -27,7 +28,7 @@ IF ( @p_AccountCode IS NOT NULL )
 		WHERE   ra.[rf_idFiles] = @p_AccountCode
 
 	SELECT  c.id AS CaseId,c.idRecordCase AS Случай,dmo.NAM_MOK AS Направление,v2.name AS Профиль,CASE WHEN c.IsChildTariff = 0 THEN 'Взрослый' WHEN c.IsChildTariff = 1 THEN 'Детский' ELSE 'Не указан' END AS Тариф ,
-			c.NumberHistoryCase AS НомерКарты,c.DateBegin AS Начат,c.DateEnd AS Окончен,c.AmountPayment AS Выставлено,v9.Name AS Результат,v4.Name AS СпециальностьМедРаботника,UPPER(rp.Fam + ' ' + rp.Im + ' ' + ISNULL(rp.Ot, '')) AS Пациент,
+			c.NumberHistoryCase AS НомерКарты,c.DateBegin AS Начат,c.DateEnd AS Окончен,c.AmountPayment AS Выставлено,cast(v9.Id as varchar(4))+' — '+v9.Name AS Результат,v4.Name AS СпециальностьМедРаботника,UPPER(rp.Fam + ' ' + rp.Im + ' ' + ISNULL(rp.Ot, '')) AS Пациент,
 			v5.Name AS Пол,rp.BirthDay AS ДатаРождения,c.age AS Возраст,rpd.SNILS AS СНИЛС/*пациента*/,/*rcp.SeriaPolis AS СерияПолиса,*/ltrim(isnull(rcp.SeriaPolis,'')+' '+ rcp.NumberPolis) AS НомерПолиса,f.DateRegistration AS ДатаРегистрации,f.CodeM AS CodeMO,
 			mo2.NameS AS МО,rtrim(d.DS1) +' — '+ mkb.Diagnosis AS Диагноз,rcp.[AttachLPU] AS МОПрикрепления,case when RTRIM(rcp.[NewBorn])=0 then 'Нет' when RTRIM(rcp.[NewBorn])=1 then 'Да' end  as NewBornWord,
 			c.rf_idDoctor СНИЛСВрача,rp.TEL PacTel,dis.[DateDefine] ДатаИнвалидности,
@@ -272,7 +273,7 @@ end
 else if (@p_TypeCheckup='0')
 begin insert into #kosku select 0 CaseId, 0 InfoMEK, '' InfoMEE, '' InfoEMP, 0 deducMEK, 0 deducMEE, 0 deducEKMP end
 
-select c.*,v9.Name Результат,v4.Name СпециальностьМедРаботника,v5.Name Пол
+select c.*,cast(v9.Id as varchar(4))+' — '+v9.Name Результат,v4.Name СпециальностьМедРаботника,v5.Name Пол
        ,rpd.SNILS СНИЛС,mo.CodeM+' — '+mo.MOName МО
 	   ,[SMOKOD] + ' - ' + [NAM_SMOK] SMO--,dmo.NAM_MOK Направление
 	   ,case when rtrim(c.NewBorn)=1 then 'Да' else 'Нет' end NewBornWord

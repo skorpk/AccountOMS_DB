@@ -33,7 +33,7 @@ IF ( @p_AccountCode IS NOT NULL )
 		WHERE   ra.[rf_idFiles] = @p_AccountCode
 
 	SELECT  c.id AS CaseId,c.DateEnd AS Окончен,osl.id osl_id,c.idRecordCase AS Случай,c.rf_idDirectMO+' — '+dmo.NAM_MOK AS Направление,dd.DirectionDate, v2.name AS Профиль,CASE WHEN c.IsChildTariff = 0 THEN 'Взрослый' WHEN c.IsChildTariff = 1 THEN 'Детский' ELSE 'Не указан' END AS Тариф ,
-			c.NumberHistoryCase AS НомерКарты,c.DateBegin AS Начат,c.AmountPayment AS Выставлено,cc.AmountPayment AS AmPayZSL,v9.Name AS Результат,v4.Name AS СпециальностьМедРаботника,UPPER(rp.Fam + ' ' + rp.Im + ' ' + ISNULL(rp.Ot, '')) AS Пациент,
+			c.NumberHistoryCase AS НомерКарты,c.DateBegin AS Начат,c.AmountPayment AS Выставлено,cc.AmountPayment AS AmPayZSL,cast(v9.Id as varchar(4))+' — '+v9.Name AS Результат,v4.Name AS СпециальностьМедРаботника,UPPER(rp.Fam + ' ' + rp.Im + ' ' + ISNULL(rp.Ot, '')) AS Пациент,
 			v5.Name AS Пол,rp.BirthDay AS ДатаРождения,c.age AS Возраст,rpd.SNILS AS СНИЛС/*пациента*/,ltrim(isnull(rcp.SeriaPolis,'')+' '+ rcp.NumberPolis) AS НомерПолиса,f.DateRegistration AS ДатаРегистрации,f.CodeM AS CodeMO,
 			mo2.NameS AS МО,rtrim(d.DS1) +' — '+ mkb.Diagnosis AS Диагноз,rcp.[AttachLPU] AS МОПрикрепления,case when RTRIM(rcp.[NewBorn])>0 then 'Да' else 'Нет' end as NewBornWord,
 			c.rf_idDoctor СНИЛСВрача,rp.TEL PacTel,dis.[DateDefine] ДатаИнвалидности,v12.Name [Исход],
@@ -160,6 +160,7 @@ SELECT @p_FilialCode =CASE WHEN @p_FilialCode = -1 THEN NULL ELSE (SELECT filial
 	[rf_idV006] [tinyint] null, --условия оказания
 	[rf_idV008] [smallint] null, --вид помощи
 	[rf_idDirectMO] [char](6) null,
+	[HopitalisationType] [tinyint] null,
 	[rf_idV014] [tinyint] not null, --форма оказания МП
 	[rf_idV010] [tinyint] not null, --способ оплаты
 	[rf_idV018] [varchar](19) null, --вид ВМП
@@ -222,7 +223,7 @@ begin
 		and f.TypeFile='H'
 		and f.DateRegistration >= @p_StartDate AND f.DateRegistration <=@p_EndDate
 
-		if (@p_Premature = 1 or @p_Diag <> '')
+		if (@p_Premature = 1)
 			begin
 				delete t1 from #trf_idCaseTOTALFilter t1
 				where not exists (select t2.rf_idcase from #trf_idCaseTEMPFilter t2 where t1.rf_idCase=t2.rf_idCase)
@@ -444,7 +445,9 @@ else if (@p_TypeCheckup in ('1','2','3'))
 						,c.IsChildTariff,c.NumberHistoryCase,c.DateBegin,c.DateEnd
 						,rp.BirthDay,c.age,rcp.SeriaPolis,rcp.NumberPolis,f.DateRegistration,f.CodeM,ra.Account,ra.[DateRegister]
 						,rcp.[AttachLPU],c.rf_idDoctor,rcp.[NewBorn],rp.TEL
-						,rp.rf_idV005,ra.[rf_idSMO],c.rf_idV009,rp.id,c.rf_idV004,rcp.IsNew,c.Comments, rcp.id, ra.ReportYear,rp.Fam,rp.Im,rp.Ot)'
+						,rp.rf_idV005,ra.[rf_idSMO],c.rf_idV009,rp.id,c.rf_idV004,rcp.IsNew,c.Comments, rcp.id, ra.ReportYear,rp.Fam,rp.Im,rp.Ot,c.[TypeTranslation],rcp.BirthWeight
+						,c.MSE, c.C_ZAB,c.KD, c.[IsFirstDS],c.rf_idV012, c.rf_idV006,c.rf_idV008,c.rf_idDirectMO,c.HopitalisationType,c.rf_idV002,c.rf_idV014,c.rf_idV010
+						,c.rf_idV018,c.rf_idV019, c.rf_idDepartmentMO, c.rf_idSubMO, c.IT_SL, osl.[id])'
 end
 print (@Query)
 EXEC (@Query)  
@@ -524,7 +527,7 @@ begin insert into #kosku select 0 CaseId, 0 InfoMEK, '' InfoMEE, '' InfoEMP, 0 d
 
 
 
-select c.CaseId,c.[Окончен],osl.id osl_id,c.*,v9.Name Результат,v4.Name СпециальностьМедРаботника,v5.Name Пол
+select c.CaseId,c.[Окончен],osl.id osl_id,c.*,cast(v9.Id as varchar(4))+' — '+v9.Name Результат,v4.Name СпециальностьМедРаботника,v5.Name Пол
 	,rpd.SNILS СНИЛС,mo.CodeM+' — '+mo.MOName МО
 	,[SMOKOD] + ' - ' + [NAM_SMOK] SMO--,dmo.NAM_MOK Направление
 	,case when RTRIM(c.[NewBorn])>0 then 'Да' else 'Нет' end NewBornWord
@@ -591,7 +594,17 @@ left JOIN [oms_nsi].[dbo].[sprN004] n4 on n4.[ID_N]=osl.[rf_idN004] and c.[Ок�
 left JOIN [oms_nsi].[dbo].[sprN005] n5 on n5.[ID_M]=osl.[rf_idN005] and c.[Окончен] between n5.DateBeg and n5.DateEnd
 left join [oms_nsi].[dbo].[sprV027] v27 on v27.IDCZ=c.C_ZABid and c.[Окончен] between v27.DateBeg and v27.DateEnd
 --order by c.[Окончен]
+
+
+--drop table #lpu
+--drop table #t
+--drop table #trf_idCaseTOTALFilter
+--drop table #trf_idCaseTEMPFilter
+--drop table #tD
+
+
 END 
+
 
 GO
 

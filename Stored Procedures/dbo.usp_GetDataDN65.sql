@@ -83,35 +83,35 @@ FROM #tCases p INNER JOIN (SELECT c.rf_idCase,ISNULL(SUM(c.AmountPaymentAccept),
 
 IF @by_diag = 0 
 	BEGIN
-		SELECT 1 AS id, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0 
+		SELECT 1 AS id, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0 
 		UNION ALL
-		SELECT 2, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' 
+		SELECT 2, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' 
 		UNION ALL
-		SELECT 3, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age=65
+		SELECT 3, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age=65
 		UNION ALL
-		SELECT 4, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age>65
+		SELECT 4, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age>65
 		UNION ALL
-		SELECT 5, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' 
+		SELECT 5, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' 
 		UNION ALL
-		SELECT 6, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age=65
+		SELECT 6, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age=65
 		UNION ALL
-		SELECT 7, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age>65
+		SELECT 7, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age>65
 	END
 ELSE
 	BEGIN
-		SELECT 1 AS id, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0 AND dn_diag IS NOT NULL 
+		SELECT 1 AS id, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0 AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 2, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND dn_diag IS NOT NULL 
+		SELECT 2, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 3, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age=65 AND dn_diag IS NOT NULL 
+		SELECT 3, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age=65 AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 4, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age>65 AND dn_diag IS NOT NULL 
+		SELECT 4, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='М' AND Age>65 AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 5, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND dn_diag IS NOT NULL 
+		SELECT 5, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 6, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age=65 AND dn_diag IS NOT NULL 
+		SELECT 6, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age=65 AND dn_diag IS NOT NULL 
 		UNION ALL
-		SELECT 7, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmmPay) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age>65 AND dn_diag IS NOT NULL 
+		SELECT 7, SUM(AmountPayment) AS Col5,COUNT(DISTINCT enp) AS Col6, SUM(AmountPayment) AS Col7 FROM #tCases WHERE AmountPaymentAcc>0  AND Sex='Ж' AND Age>65 AND dn_diag IS NOT NULL 
 	END
 
 DROP TABLE #tCases

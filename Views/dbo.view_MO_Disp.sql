@@ -2,9 +2,10 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE view [dbo].[view_MO_Disp]
+
+CREATE VIEW [dbo].[view_MO_Disp]
 AS
-SELECT  distinct
+SELECT  DISTINCT
 		t1.[MOId] AS MOId ,
 		LEFT(t1.[tfomsCode], 6) AS tfomsCode ,
         ISNULL(t1.[rf_FirstLvlId], t1.MOId) AS rf_FirstLvlId ,
@@ -40,11 +41,11 @@ SELECT  distinct
         t1.[corp] ,
         t1.[rf_FilialId] ,
         t1.[rf_CityAreaId],
-		b.year as yearExam
+		b.year AS yearExam
 FROM    [oms_NSI].[dbo].[tMO] AS t
         INNER JOIN [oms_NSI].[dbo].tMO AS t1 ON t.MOId = ISNULL(t1.rf_FirstLvlId,
 																	   t1.MOId)		
-		INNER JOIN [oms_NSI].[dbo].tClinicalExamMO b on b.rf_MOId = ISNULL(t1.[rf_FirstLvlId], t1.MOId)
+		INNER JOIN [oms_NSI].[dbo].tClinicalExamMO b ON b.rf_MOId = ISNULL(t1.[rf_FirstLvlId], t1.MOId)
 WHERE   t.flag = 'A'
-		and b.rf_ClinicalExamTypeId in (1,2)
+		AND b.rf_ClinicalExamTypeId IN (10,11,12,13,14,15)
 GO

@@ -209,7 +209,7 @@ create table #t8
 	OKATOP nchar(11),
 	COMENTP nvarchar(250)
 )
-CREATE TABLE #tDost(ID_PAC nvarchar(36),DOST TINYINT, IsAttendant BIT) --new
+CREATE TABLE #tDost(ID_PAC nvarchar(36),DOST TINYINT, IsAttendant TINYINT) --new
 
 declare @tempID as table(id int, ID_PAC nvarchar(36),N_ZAP int)
 
@@ -618,11 +618,11 @@ FROM OPENXML (@ipatient, 'PERS_LIST/PERS/DOST',2)
 		)
 
 INSERT #tDOST(ID_PAC, DOST,IsAttendant)				
-SELECT DISTINCT ID_PAC,DOST,2
+SELECT DISTINCT ID_PAC,DOST_P,2
 FROM OPENXML (@ipatient, 'PERS_LIST/PERS/DOST_P',2)
 	WITH(
 			ID_PAC NVARCHAR(36) '../ID_PAC',
-			DOST TINYINT 'text()'
+			DOST_P TINYINT 'text()'
 		)  
 EXEC sp_xml_removedocument @ipatient
 --select * from @t7
@@ -783,7 +783,7 @@ begin
 	
 	select @zapRC=COUNT(*)
 	from (
-			SELECT distinct cast(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
+			select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
 					,p.NumberPolis
 					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
 					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
@@ -816,21 +816,18 @@ begin
 					and r.rf_idF008=t.VPOLIS
 					and r.SeriaPolis=COALESCE(t.SPOLIS,'')
 					and r.NumberPolis=t.NPOLIS
-					and LTRIM(r.rf_idSMO)=LTRIM(t.SMO)
+					and r.rf_idSMO=t.SMO
 					and r.OKATO=COALESCE(t.SMO_OK,'18000')
 					and r.NewBorn=t.NOVOR
 					and isnull(r.MO_PR,'000000')=t.MO_PR
 					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
 					AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
-					AND r.IsNew=t.PR_NOV			
-					
-
-		if(@zapRC-@zapA)<>0	
+					AND r.IsNew=t.PR_NOV					
+	if(@zapRC-@zapA)<>0	
 	begin
 		insert @et values(588,13)
 	end	
 end
-
 --Поиск некорректных данных с ошибкой 588 в SLUCH
 if NOT EXISTS(select * from @et)
 begin
@@ -853,11 +850,7 @@ if NOT EXISTS(select * from @et)
 begin
 declare @caseRC int,
 		@caseA int
-	---Изменения от 23.03.2012 заменил функцию на ХП
-	---проверяем совпадение по случаям предоставленным МУ и то что должны предоставить
-	--считаем количество строк по случаем в файле
--------удалить условие 27.02.2019------------
-select @caseA=count(DISTINCT t.SL_ID)  from #t5 t WHERE t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E'	
+
 ----------2012-12-29
 create table #case
 (
@@ -1026,55 +1019,6 @@ end
 			t1.SL_ID =k.SL_ID
 			WHERE COALESCE(t1.Code_Mes1,k.N_KSG,'0')=isnull(t.MES,'0') AND ISNULL(t.IT_SL,9)=ISNULL(k.IT_SL,9)
 			
-			select t1.ID_C,t.GUID_Case
-	from #case t right join #t5 t1 on
-			ID_PAC=upper(t.ID_Patient) 
-			and t1.ID_C=t.GUID_Case
-			and USL_OK=t.rf_idV006 
-			and VIDPOM=t.rf_idV008
-			AND ISNULL(FOR_POM,0)=ISNULL(t.rf_idV014,0)			
-			AND ISNULL(VID_HMP,'bla-bla')=ISNULL(t.rf_idV018,'bla-bla')			
-			AND ISNULL(METOD_HMP,0)=ISNULL(t.rf_idV019,0)			
-			--and isnull(NPR_MO,0)=isnull(t.rf_idDirectMO,0)
-			and isnull(EXTR,0)=isnull(t.HopitalisationType,0)
-			and LPU=t.rf_idMO
-			and PROFIL=t.rf_idV002
-			and DET =t.IsChildTariff
-			and NHISTORY =NumberHistoryCase
-			and DATE_1=DateBegin
-			and DATE_2=DateEnd
-			and isnull(t1.DS0,0)=isnull(t.DS0,0)
-			and t1.DS1=t.DS1						
-			and RSLT=t.rf_idV009  
-			and ISHOD=t.rf_idV012  
-			and PRVS=t.rf_idV004  
-			and isnull(OS_SLUCH,0)=isnull(t.IsSpecialCase,0)
-			and IDSP=t.rf_idV010  
-			and isnull(ED_COL,0)=ISNULL(t.Quantity,0) 
-			and isnull(TARIF ,0)=ISNULL(t.Tariff,0) 
-			and ISNULL(t.[Emergency],0)=ISNULL(t1.F_SP,0)
-			AND ISNULL(t.Comments,'bla-bla')=ISNULL(t1.COMENTSL,'bla-bla')
-			--AND ISNULL(t.IT_SL,9)=ISNULL(t1.IT_SL,9)
-			AND ISNULL(t.P_PER,9)=ISNULL(t1.P_PER,9)
-			AND ISNULL(t.IDDOCT,0) =t1.IDDOCT
-			AND ISNULL(t.rf_idSubMO,'bla-bla')=ISNULL(t1.LPU_1,'bla-bla')
-			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t1.PODR,0)
-			AND ISNULL(t.MSE,0)=ISNULL(t1.MSE,0)
-			AND ISNULL(t.C_ZAB,0)=ISNULL(t1.C_ZAB,0)
-			AND ISNULL(t.DS_ONK,0)=ISNULL(t1.DS_ONK,0)			
-			AND t.AmountPayment=t1.SUM_M
-			AND t1.SL_ID=t.SL_ID
-			AND ISNULL(t.VB_P,10)=ISNULL(t1.VB_P,10)
-			AND t.DATE_Z_1=t1.DATE_Z_1
-			AND t.DATE_Z_2=t1.DATE_Z_2
-			AND ISNULL(t.KD_Z,1000)=ISNULL(t1.KD_Z,1000)
-			AND t.SUMV=t1.SUMV
-			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
-		WHERE t.GUID_Case IS null
-
-			
-			SELECT * FROM #case WHERE GUID_Case='2174986B-58EE-4ABD-9AE0-187A9DCD476C'
-			SELECT * FROM #t5 WHERE ID_C='2174986B-58EE-4ABD-9AE0-187A9DCD476C'
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))
 			BEGIN 			
@@ -1091,7 +1035,6 @@ end
 			begin
 				IF EXISTS(SELECT * FROM #tBW b WHERE NOT EXISTS(SELECT * FROM #tBirthWeight WHERE GUID_Case=b.ID_C AND VNOV_M=b.BirthWeight))
 				BEGIN 			
-					
 					insert @et values(588,15)
 				END
 			end
@@ -1146,18 +1089,15 @@ end
 			BEGIN 			
 				insert @et values(588,100)
 			END     						-------удалить условие 27.02.2019------------
-			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
+			IF EXISTS(SELECT * FROM #t5 t WHERE t.PROFIL_K IS NOT NULL AND  NOT EXISTS(SELECT * FROM #tProfileOfBed k WHERE k.GUID_Case=t.ID_C AND k.PROFIL_K=t.Profil_K))
 			BEGIN 			
-				INSERT @et values(588,101)
+				insert @et values(588,101)
 			END  
 			IF EXISTS(SELECT * FROM #t5 t WHERE (t.P_CEL IS NOT NULL OR t.DN IS NOT NULL) AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k 
 																										  WHERE k.GUID_Case=t.ID_C AND ISNULL(k.P_CEL,'bla')=ISNULL(t.P_CEL,'bla')  
 																												AND ISNULL(k.DN,0)=ISNULL(t.DN,0) )	)
 			BEGIN 			
 				insert @et values(588,102)
-				SELECT * FROM #t5 t WHERE (t.P_CEL IS NOT NULL OR t.DN IS NOT NULL) AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k 
-																										  WHERE k.GUID_Case=t.ID_C AND ISNULL(k.P_CEL,'bla')=ISNULL(t.P_CEL,'bla')  
-																												AND ISNULL(k.DN,0)=ISNULL(t.DN,0) )
 			END     
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.DN IS NOT NULL AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k WHERE k.GUID_Case=t.ID_C AND k.DN=t.DN))
 			BEGIN 			
@@ -1247,7 +1187,7 @@ end
 			END  	
 			
 		
-			----------------------------B_PROT---------------------------
+
 			IF EXISTS(SELECT * FROM #B_PROT_RC t INNER JOIN /*B_PROT*/ #t5 tt ON t.GUID_Case=tt.ID_C WHERE t.PROT IS NOT NULL AND  NOT EXISTS(SELECT * FROM #B_PROT k WHERE t.GUID_Case=k.ID_C AND k.PROT=t.PROT AND k.D_PROT=t.D_PROT))
 			BEGIN 			
 				insert @et values(588,109)
@@ -1325,7 +1265,7 @@ end
 				insert @et values(588,118)
 			END  
 			-------------проверка случаев в счетах и на то должны ли они быть
-			SELECT isnull(@caseRC,0),ISNULL(@caseA,0)
+			
 			if(isnull(@caseRC,0)-isnull(@caseA,0))<>0
 			begin
 				insert @et values(588,15)
@@ -1365,9 +1305,6 @@ if NOT EXISTS(select * from @et)
 begin
 declare @meduslugiRC int,
 		@meduslugiA int
---внес изменения т.к при зачистке данных в базе Реестров сведений за Страмным удалил хирургические операции.
--------удалить условие 27.02.2019------------
-	select @meduslugiA=count(DISTINCT ID_U) from #t6 t WHERE t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E' 
 	
 	CREATE TABLE #meduslugi 
 		(
@@ -1423,25 +1360,6 @@ declare @meduslugiRC int,
 		insert @et values(588,17)
 	end
 end
-/*
-отключил т.к. сумма считается теперь по другому
---проверка на кооректное выставление мед.услуг в случае
-if NOT EXISTS(select * from @et)
-begin
-	if EXISTS(	
-				select c.ID_C,c.SUMV
-				from #t5 c inner join #t6 m on 
-						c.SL_ID=m.SL_ID
-						and c.IDCASE=m.IDCASE
-				where c.CODE_MES1 is null
-				group by c.ID_C,c.SUMV
-				having c.SUMV<>cast(SUM(m.KOL_USL*m.TARIF) as decimal(15,2))
-			  )	
-	begin
-			insert @et values(588,18)
-	end
-end
-*/
 if NOT EXISTS(select * from @et)
 begin
 ---------поиск случаев без медуслуг
@@ -1451,6 +1369,20 @@ begin
 						c.SL_ID=m.SL_ID
 						and c.IDCASE=m.IDCASE
 				where c.CODE_MES1 is null and m.ID_U is null
+			  )	
+	begin
+		insert @et values(588,19)
+	end
+END
+--11.03.2020
+if NOT EXISTS(select * from @et)
+begin
+---------поиск случаев в которых ID_U повторяется
+	if EXISTS(	
+				select m.ID_C,m.ID_U 
+				from  #t6 m 
+				GROUP BY m.ID_C,m.ID_U 
+				HAVING COUNT(*)>1				
 			  )	
 	begin
 		insert @et values(588,19)
@@ -1550,14 +1482,53 @@ begin
 	begin
 		insert @et values(588,20)
 	end	
+	-----------------------DOST---------------------------
+		 DECLARE @ddRC INT,
+				@ddA INT
+                
+		 SELECT @ddRC=COUNT(*)
+		 FROM (
+				 SELECT distinct r1.ID_Patient,rl.TypeReliability,rl.IsAttendant		
+					from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+						f.id=a.rf_idFilesBack
+						and f.rf_idFiles=@idF			
+											inner join RegisterCases.dbo.t_RecordCaseBack r on
+						a.id=r.rf_idRegisterCaseBack
+											INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+						r.id=cp.rf_idRecordCaseBack					
+						and cp.TypePay=1
+											inner join RegisterCases.dbo.t_RecordCase r1 on
+						r.rf_idRecordCase=r1.id
+											inner join RegisterCases.dbo.t_PatientBack p on
+						r.id=p.rf_idRecordCaseBack
+						and p.rf_idSMO=@smo
+											inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
+						r1.id=rf.rf_idRecordCase
+											inner join RegisterCases.dbo.t_RegisterPatient rp on
+						rf.rf_idRegisterPatient=rp.id
+						and rp.rf_idFiles=@idF
+											inner join RegisterCases.dbo.t_ReliabilityPatient rl ON
+				             rp.id=rl.rf_idRegisterPatient
+				) t INNER JOIN #tDost d ON
+				t.ID_Patient=d.ID_PAC
+				AND t.TypeReliability=d.DOST
+
+				SELECT @ddA=COUNT(*) FROM #tDost
+         IF(@ddA<>@ddRC)       
+		 BEGIN 
+			insert @et values(588,135)
+		 end
+											
+		
 end
 -------------------------------------------------------------------------------------------------------
 
 --возвращаем @idFile и 0 или 1 отличное от нуля(0- ошибок нету,  1-ошибки есть)
 IF EXISTS (select * from @et)
 begin
-	select distinct @idFile,errorId,id from @et	
 	
+	
+	select distinct errorId,id from @et	
 	
 END
 

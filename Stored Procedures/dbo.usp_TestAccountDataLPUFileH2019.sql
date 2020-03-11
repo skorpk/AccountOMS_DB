@@ -1368,25 +1368,6 @@ declare @meduslugiRC int,
 		insert @et values(588,17)
 	end
 end
-/*
-отключил т.к. сумма считается теперь по другому
---проверка на кооректное выставление мед.услуг в случае
-if NOT EXISTS(select * from @et)
-begin
-	if EXISTS(	
-				select c.ID_C,c.SUMV
-				from #t5 c inner join #t6 m on 
-						c.SL_ID=m.SL_ID
-						and c.IDCASE=m.IDCASE
-				where c.CODE_MES1 is null
-				group by c.ID_C,c.SUMV
-				having c.SUMV<>cast(SUM(m.KOL_USL*m.TARIF) as decimal(15,2))
-			  )	
-	begin
-			insert @et values(588,18)
-	end
-end
-*/
 if NOT EXISTS(select * from @et)
 begin
 ---------поиск случаев без медуслуг
@@ -1396,6 +1377,20 @@ begin
 						c.SL_ID=m.SL_ID
 						and c.IDCASE=m.IDCASE
 				where c.CODE_MES1 is null and m.ID_U is null
+			  )	
+	begin
+		insert @et values(588,19)
+	end
+END
+--11.03.2020
+if NOT EXISTS(select * from @et)
+begin
+---------поиск случаев в которых ID_U повторяется
+	if EXISTS(	
+				select m.ID_C,m.ID_U 
+				from  #t6 m 
+				GROUP BY m.ID_C,m.ID_U 
+				HAVING COUNT(*)>1				
 			  )	
 	begin
 		insert @et values(588,19)

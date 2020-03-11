@@ -15,9 +15,9 @@ CREATE PROCEDURE [dbo].[usp_selectReport_MEEProfAndDisp_2017]
 AS	
 CREATE TABLE #tPeople(rf_idCase BIGINT,DateBegin DATE,DateEnd DATE,CodeM CHAR(6),Account VARCHAR(15),ReportMonth TINYINT
 ,AmountPayment DECIMAL(11,2),rf_idSMO CHAR(5),NumberHistoryCase VARCHAR(50),Policy VARCHAR(30),DateAccount DATE
-,NumberCase BIGINT,TypeDisp nvarchar(4),Letter VARCHAR(1),IsOnlyMEK BIT NOT NULL DEFAULT(1))
-INSERT #tPeople(rf_idCase ,DateBegin ,DateEnd ,CodeM ,Account ,AmountPayment,rf_idSMO,NumberHistoryCase,Policy,DateAccount,NumberCase,TypeDisp,Letter )
-SELECT c.id,c.DateBegin,c.DateEnd,f.CodeM,a.Account,c.AmountPayment,a.rf_idSMO,c.NumberHistoryCase,r.NumberPolis,a.DateRegister,c.idRecordCase, di.TypeDisp, a.Letter
+,NumberCase BIGINT,TypeDisp nvarchar(4),Letter VARCHAR(1),IsOnlyMEK BIT NOT NULL DEFAULT(1), rcpid int)
+INSERT #tPeople(rf_idCase ,DateBegin ,DateEnd ,CodeM ,Account ,AmountPayment,rf_idSMO,NumberHistoryCase,Policy,DateAccount,NumberCase,TypeDisp,Letter,rcpid )
+SELECT c.id,c.DateBegin,c.DateEnd,f.CodeM,a.Account,c.AmountPayment,a.rf_idSMO,c.NumberHistoryCase,r.NumberPolis,a.DateRegister,c.idRecordCase, di.TypeDisp, a.Letter,r.id
 FROM AccountOMS.dbo.t_File f 
 INNER JOIN AccountOMS.dbo.t_RegistersAccounts a ON f.id=a.rf_idFiles AND f.CodeM=@codeM AND a.rf_idSMO<>'34'
 INNER JOIN (VALUES('O'),('F'),('V'),('I'),('R'),('U'),('D')) v(letter) ON a.Letter=v.letter
@@ -74,12 +74,12 @@ INNER JOIN (SELECT DISTINCT rf_idCase
 --			AND d.TypeCheckup>1 ) r ON p.rf_idCase=r.rf_idCase
 -----------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------ИТОГИ------------------------------------------------------------
-SELECT p1.FAM+' '+p1.IM+' '+ISNULL(p1.OT,'') AS FIO,CAST(p1.DR AS DATE) AS DR,p.Policy,s.sNameS,p.NumberHistoryCase,d.DS1
+SELECT p1.FAM+' '+p1.IM+' '+ISNULL(p1.OT,'') AS FIO,CAST(p1.BirthDay AS DATE) AS DR,p.Policy,s.sNameS,p.NumberHistoryCase,d.DS1
 ,p.Account,p.DateAccount,p.NumberCase,p.DateBegin,p.DateEnd,ISNULL(p.AmountPayment,0), TypeDisp, Letter
 FROM #tPeople p 
 INNER JOIN AccountOMS.dbo.t_Case_PID_ENP en ON p.rf_idCase=en.rf_idCase
 INNER JOIN AccountOMS.dbo.vw_Diagnosis d ON p.rf_idCase=d.rf_idCase
-INNER JOIN PolicyRegister.dbo.PEOPLE p1 ON en.pid=p1.ID
+left JOIN AccountOMS.dbo.t_RegisterPatient AS p1 ON p1.rf_idRecordCase=p.rcpid
 INNER JOIN AccountOMS.dbo.vw_sprSMO s ON p.rf_idSMO=s.smocod
 WHERE p.AmountPayment>0	AND IsOnlyMEK=1		
 ORDER BY FIO

@@ -284,7 +284,7 @@ select c.*,cast(v9.Id as varchar(4))+' — '+v9.Name Результат,v4.Name 
 	   ,cc.id CompletedCaseID,psmo.ENP,dis.[DateDefine] [ДатаИнвалидности], UPPER(c.Fam + ' ' + c.Im + ' ' + ISNULL(c.Ot,'')) [Пациент]
 	   ,CAST(CASE WHEN c.IsChildTariff = 0 THEN 'Взрослый' WHEN c.IsChildTariff = 1 THEN 'Детский' ELSE 'Не указан' END AS VARCHAR(20)) [Тариф]
 	   ,ltrim(isnull(c.SeriaPolis,'') + ' '+c.NumberPolis) [НомерПолиса],case when c.IsNew=0 then 'Первичная' when c.IsNew=1 then 'Повторная' end PR_NOV
-	   ,datename(mm,c.[Окончен]) [ReportMonth],InfoMEK,InfoMEE,InfoEKMP,deducMEK,deducMEE,deducEKMP
+	   ,datename(mm,c.[Окончен]) [ReportMonth],InfoMEK,InfoMEE,InfoEKMP,deducMEK,deducMEE,deducEKMP,rtrim(d.DiagnosisCode) +' — '+ mkb.Diagnosis AS Диагноз
 from #t c
 INNER JOIN OMS_NSI.dbo.sprV005 AS v5 ON c.rf_idV005 = v5.Id
 INNER JOIN [OMS_NSI].[dbo].[sprSMO] AS SMO ON c.[rf_idSMO] = SMO.[SMOKOD]
@@ -293,6 +293,8 @@ inner join t_DispInfo di on di.rf_idCase=c.CaseId
 inner join [oms_nsi].[dbo].[sprV016TFOMS] v16 on v16.Code=di.TypeDisp
 inner join [dbo].[t_CompletedCase] cc on cc.rf_idRecordCasePatient=c.RCPID
 inner join dbo.t_PatientSMO psmo on psmo.rf_idRecordCasePatient=c.RCPID
+INNER JOIN dbo.t_Diagnosis AS d ON c.CaseId = d.rf_idCase and d.TypeDiagnosis=1
+INNER JOIN OMS_NSI.dbo.sprMKB AS mkb ON mkb.DiagnosisCode = d.DiagnosisCode
 
 left JOIN [dbo].[t_Disability] dis ON dis.[rf_idRecordCasePatient]=c.RCPID	        
 LEFT JOIN OMS_NSI.dbo.sprV009 AS v9 ON c.rf_idV009 = v9.Id

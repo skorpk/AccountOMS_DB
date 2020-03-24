@@ -828,6 +828,7 @@ begin
 		insert @et values(588,13)
 	end	
 end
+
 --Поиск некорректных данных с ошибкой 588 в SLUCH
 if NOT EXISTS(select * from @et)
 begin
@@ -850,7 +851,11 @@ if NOT EXISTS(select * from @et)
 begin
 declare @caseRC int,
 		@caseA int
-
+	---Изменения от 23.03.2012 заменил функцию на ХП
+	---проверяем совпадение по случаям предоставленным МУ и то что должны предоставить
+	--считаем количество строк по случаем в файле
+-------удалить условие 27.02.2019------------
+select @caseA=count(DISTINCT t.SL_ID)  from #t5 t WHERE t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E'	
 ----------2012-12-29
 create table #case
 (
@@ -1305,6 +1310,9 @@ if NOT EXISTS(select * from @et)
 begin
 declare @meduslugiRC int,
 		@meduslugiA int
+--внес изменения т.к при зачистке данных в базе Реестров сведений за Страмным удалил хирургические операции.
+-------удалить условие 27.02.2019------------
+	select @meduslugiA=count(DISTINCT ID_U) from #t6 t WHERE t.SL_ID<>'CC9FD76E-67F3-A79F-EA66-67D63CCB390E' 
 	
 	CREATE TABLE #meduslugi 
 		(
@@ -1526,8 +1534,6 @@ end
 --возвращаем @idFile и 0 или 1 отличное от нуля(0- ошибок нету,  1-ошибки есть)
 IF EXISTS (select * from @et)
 begin
-	
-	
 	select distinct errorId,id from @et	
 	
 END

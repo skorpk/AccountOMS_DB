@@ -11,7 +11,7 @@ CREATE PROCEDURE [dbo].[usp_ReportFFOMS96Columns]
 as        
 --последняя версия. 
 SELECT DiagnosisCode INTO #tD FROM dbo.vw_sprMKB10 WHERE MainDS LIKE 'D0_' OR MainDS LIKE 'C__'	
-AND MainDS NOT IN(/*'C80',*/'C81','C82','C83','C84','C85','C86','C88','C90', 'C91','C92','C93','C94','C95','C96')
+--AND MainDS NOT IN(/*'C80',*/'C81','C82','C83','C84','C85','C86','C88','C90', 'C91','C92','C93','C94','C95','C96')
 
 DECLARE @lastMonth TINYINT, --последний отчетный месяц
 		@dateEndCase DATE
@@ -256,14 +256,14 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			a.id=r.rf_idRegistersAccounts					
 					INNER JOIN dbo.t_Case c  ON
 			r.id=c.rf_idRecordCasePatient
-					INNER JOIN t_DS_ONK_REAB dd ON
+					INNER JOIN dbo.vw_DS_ONK dd ON
 			c.id=dd.rf_idCase 			
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient	
 					INNER JOIN dbo.t_DirectionMU dm ON
 			c.id=dm.rf_idCase					 												   					  					      			
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND dd.DS_ONK=1 
-AND dm.TypeDirection IN (1,2) and c.rf_idV002 IN(18,60) --AND dm.DirectionMO IN ('340017','340018','340019','103001','103002', '103003') --направление в ВОКОД
+AND dm.TypeDirection IN (2) and c.rf_idV002 IN(18,60) 
 
 
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
@@ -273,6 +273,7 @@ FROM #tCasesM p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountD
 								GROUP BY c.rf_idCase
 							) r ON
 			p.rf_idCase=r.rf_idCase
+
 INSERT #tmpMagalyz( Col17)
 SELECT COUNT(DISTINCT ENP) AS Col17
 from #tCasesM WHERE AmountPay>0 AND DiffDay IN (0,1,2)	
@@ -299,10 +300,13 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 					INNER JOIN dbo.t_Case c  ON
 			r.id=c.rf_idRecordCasePatient
 					INNER JOIN dbo.t_PatientSMO ps ON
-			r.id=ps.rf_idRecordCasePatient					
-					INNER JOIN dbo.t_Meduslugi m ON
-			c.id=m.rf_idCase                  
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND m.MUGroupCode=60 AND m.MUUnGroupCode IN(4,5)
+			r.id=ps.rf_idRecordCasePatient
+					INNER JOIN dbo.vw_DS_ONK dd ON
+			c.id=dd.rf_idCase 												                
+					INNER JOIN dbo.t_DirectionMU dm ON
+			c.id=dm.rf_idCase
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase 
+AND dm.TypeDirection=3 AND dm.MethodStudy=4 AND dd.DS_ONK=1
 
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
 FROM #tENP p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDeduction
@@ -321,14 +325,13 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			a.id=r.rf_idRegistersAccounts					
 					INNER JOIN dbo.t_Case c  ON
 			r.id=c.rf_idRecordCasePatient
-					INNER JOIN t_DS_ONK_REAB dd ON
+					INNER JOIN dbo.vw_DS_ONK dd ON
 			c.id=dd.rf_idCase 			
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient					
 					INNER JOIN #tENP e ON
 			ps.ENP=e.ENP                  
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND dd.DS_ONK=1 AND c.rf_idV002 IN(18,60)
-AND c.rf_idV006=3 AND e.AmountPay>0 AND c.DateEnd<e.DateBegin AND a.ReportYear=2019
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND dd.DS_ONK=1 AND c.rf_idV002 IN(18,60) AND c.rf_idV006=3 AND e.AmountPay>0 
 )
 SELECT *
 INTO #tCases21_24
@@ -345,15 +348,18 @@ FROM #tCases21_24 p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS Amo
 INSERT #tmpMagalyz( Col21)
 SELECT COUNT(DISTINCT enp) AS Col21
 from #tCases21_24 
-WHERE AmountPay>0 AND DateDiffrence<17
+WHERE AmountPay>0 --AND DateDiffrence<17
+
 INSERT #tmpMagalyz( Col22)
 SELECT COUNT(DISTINCT enp) AS Col22
 from #tCases21_24 
-WHERE AmountPay>0 AND CodeM=AttachLPU AND DateDiffrence<17
+WHERE AmountPay>0 AND CodeM=AttachLPU AND DateDiffrence<=1
+
 INSERT #tmpMagalyz( Col23)
 SELECT COUNT(DISTINCT enp) AS Col23
 from #tCases21_24 
-WHERE AmountPay>0 AND DateDiffrence>16
+WHERE AmountPay>0 AND DateDiffrence>1
+
 INSERT #tmpMagalyz( Col24)
 SELECT COUNT(DISTINCT enp) AS Col24
 from #tCases21_24 
@@ -379,8 +385,8 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			c.id=o.rf_idCase              
 					INNER JOIN dbo.t_ONK_USL u ON
 			c.id=u.rf_idCase                  
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase
-		AND o.DS1_T=0 AND u.rf_idN013 IN(1,2,3,4) AND c.DateBegin>='20190101' and c.rf_idV006<3
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND dd.DiagnosisCode LIKE 'C%' AND a.ReportYear=@reportYear /*AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase*/
+		AND o.DS1_T=0 AND u.rf_idN013 IN(1,2,3,4) AND c.DateBegin>='20200101' and c.rf_idV006<3
 
 
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction

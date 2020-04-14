@@ -8,8 +8,8 @@ SELECT  SUM(ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_Payme
                dbo.t_Case.id
 FROM     dbo.t_PaymentAcceptedCase2 RIGHT OUTER JOIN
                dbo.t_Case ON dbo.t_PaymentAcceptedCase2.rf_idCase = dbo.t_Case.id
-WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2019-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-01-20 00:00:00', 102)) AND 
-               (dbo.t_PaymentAcceptedCase2.Letter = 'r')
+WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-03-25 00:00:00', 102)) AND 
+               (dbo.t_PaymentAcceptedCase2.Letter = 's')
 GROUP BY dbo.t_Case.id, dbo.t_Case.AmountPayment
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
@@ -85,10 +85,10 @@ Begin DesignProperties =
       Begin Tables = 
          Begin Table = "t_PaymentAcceptedCase2"
             Begin Extent = 
-               Top = 14
-               Left = 119
-               Bottom = 222
-               Right = 287
+               Top = 0
+               Left = 33
+               Bottom = 208
+               Right = 323
             End
             DisplayFlags = 280
             TopColumn = 0
@@ -98,7 +98,7 @@ Begin DesignProperties =
                Top = 21
                Left = 391
                Bottom = 213
-               Right = 603
+               Right = 673
             End
             DisplayFlags = 280
             TopColumn = 14
@@ -124,7 +124,7 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 12
-         Column = 4469
+         Column = 3247
          Alias = 3369
          Table = 1168
          Output = 720
@@ -133,7 +133,7 @@ Begin DesignProperties =
          SortType = 1345
          SortOrder = 1413
          GroupBy = 1350
-         Filter = 3369
+         Filter = 4510
          Or = 1350
          Or = 1350
          Or = 1350

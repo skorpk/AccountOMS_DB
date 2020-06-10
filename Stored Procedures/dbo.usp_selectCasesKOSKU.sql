@@ -148,6 +148,9 @@ group by c.id,c.idRecordCase,c.AmountPayment ,HospType,Tarif,c.NumberHistoryCase
 
 DROP TABLE #LPU   
 DROP TABLE #t   
+
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectCasesKOSKU] TO [AccountsOMS]
+GO
+GRANT EXECUTE ON  [dbo].[usp_selectCasesKOSKU] TO [db_AccountOMS]
 GO

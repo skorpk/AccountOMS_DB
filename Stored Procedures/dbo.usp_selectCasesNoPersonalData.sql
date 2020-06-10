@@ -210,6 +210,9 @@ AS
   
   
 --END
+
+GO
+GRANT EXECUTE ON  [dbo].[usp_selectCasesNoPersonalData] TO [AccountsOMS]
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectCasesNoPersonalData] TO [db_AccountOMS]
 GO

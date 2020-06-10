@@ -1,4 +1,3 @@
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
@@ -97,7 +96,7 @@ declare @query varchar(max) = 'SELECT c.id rf_idCase,ra.Account,ra.DateRegister,
 	INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase = rcp.id
 	INNER JOIN OMS_NSI.dbo.sprV002 AS v2 ON c.rf_idV002 = v2.Id
 	INNER JOIN OMS_NSI.dbo.sprV005 AS v5 ON rp.rf_idV005 = v5.Id
-	INNER JOIN dbo.vw_sprT001_Report AS mo1 ON mo1.CodeM = f.CodeM
+	INNER JOIN dbo.vw_sprT001_Report AS mo1 ON rcp.[AttachLPU] = f.CodeM
 	INNER JOIN dbo.vw_sprT001_Report AS mo2 ON mo2.CodeM = f.CodeM
 	inner join [oms_nsi].[dbo].[sprV016TFOMS] v16 on v16.Code=di.TypeDisp
 	inner join [dbo].[t_CompletedCase] cc on cc.rf_idRecordCasePatient=rcp.id

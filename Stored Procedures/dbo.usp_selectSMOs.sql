@@ -19,6 +19,9 @@ FROM [OMS_NSI].[dbo].[sprSMO] s1
 inner join [oms_nsi].[dbo].[sprSMOInOMS] s2 on s1.[UId]=s2.[rf_sprSMOUId]
 where TF_OKATO=18000 and s2.[dateEnd]>='20190101'
 order by [SMOKOD]
+
+GO
+GRANT EXECUTE ON  [dbo].[usp_selectSMOs] TO [AccountsOMS]
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectSMOs] TO [db_AccountOMS]
 GO

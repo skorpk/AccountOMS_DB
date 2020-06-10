@@ -4,13 +4,23 @@ SET ANSI_NULLS ON
 GO
 CREATE VIEW [dbo].[View_EKSNEW]
 AS
-SELECT  SUM(ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0)) AS Eks, 
-               dbo.t_Case.id
-FROM     dbo.t_PaymentAcceptedCase2 RIGHT OUTER JOIN
-               dbo.t_Case ON dbo.t_PaymentAcceptedCase2.rf_idCase = dbo.t_Case.id
-WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-03-25 00:00:00', 102)) AND 
-               (dbo.t_PaymentAcceptedCase2.Letter = 's')
-GROUP BY dbo.t_Case.id, dbo.t_Case.AmountPayment
+SELECT  ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0) AS Eks, 
+               dbo.t_CompletedCase.id AS Ид, dbo.t_PaymentAcceptedCase2.idAkt
+FROM     dbo.t_CompletedCase INNER JOIN
+               dbo.t_RecordCasePatient ON dbo.t_CompletedCase.rf_idRecordCasePatient = dbo.t_RecordCasePatient.id INNER JOIN
+               dbo.t_Case ON dbo.t_RecordCasePatient.id = dbo.t_Case.rf_idRecordCasePatient LEFT OUTER JOIN
+               dbo.t_PaymentAcceptedCase2 ON dbo.t_Case.id = dbo.t_PaymentAcceptedCase2.rf_idCase
+WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2019-12-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-04-09 00:00:00', 102)) AND 
+               (dbo.t_CompletedCase.DateEnd BETWEEN CONVERT(DATETIME, '2019-12-01 00:00:00', 102) AND CONVERT(DATETIME, '2020-03-31 00:00:00', 102))
+GROUP BY dbo.t_CompletedCase.id, dbo.t_PaymentAcceptedCase2.idAkt, ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) 
+               + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0)
+GO
+EXEC sp_addextendedproperty N'MS_DiagramPane2', N'50
+         Or = 1350
+      End
+   End
+End
+', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
 Begin DesignProperties = 
@@ -83,12 +93,22 @@ Begin DesignProperties =
          Left = 0
       End
       Begin Tables = 
-         Begin Table = "t_PaymentAcceptedCase2"
+         Begin Table = "t_CompletedCase"
             Begin Extent = 
-               Top = 0
-               Left = 33
-               Bottom = 208
-               Right = 323
+               Top = 150
+               Left = 762
+               Bottom = 265
+               Right = 986
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "t_RecordCasePatient"
+            Begin Extent = 
+               Top = 7
+               Left = 1005
+               Bottom = 122
+               Right = 1227
             End
             DisplayFlags = 280
             TopColumn = 0
@@ -101,7 +121,17 @@ Begin DesignProperties =
                Right = 673
             End
             DisplayFlags = 280
-            TopColumn = 14
+            TopColumn = 0
+         End
+         Begin Table = "t_PaymentAcceptedCase2"
+            Begin Extent = 
+               Top = 0
+               Left = 33
+               Bottom = 208
+               Right = 323
+            End
+            DisplayFlags = 280
+            TopColumn = 0
          End
       End
    End
@@ -124,7 +154,7 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 12
-         Column = 3247
+         Column = 3342
          Alias = 3369
          Table = 1168
          Output = 720
@@ -133,16 +163,15 @@ Begin DesignProperties =
          SortType = 1345
          SortOrder = 1413
          GroupBy = 1350
-         Filter = 4510
+         Filter = 3369
          Or = 1350
-         Or = 1350
-         Or = 1350
-      End
-   End
-End
-', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
+         Or = 13', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
 GO
 DECLARE @xp int
 SELECT @xp=1
+
+GO
+DECLARE @xp int
+SELECT @xp=2
 EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
 GO

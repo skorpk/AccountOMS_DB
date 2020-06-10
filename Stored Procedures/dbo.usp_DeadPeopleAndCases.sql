@@ -26,7 +26,7 @@ FROM AccountOMS.dbo.t_File f INNER JOIN AccountOMS.dbo.t_RegistersAccounts a ON
 			AND c.DateEnd>='20170101'					
 					INNER JOIN AccountOMS.dbo.vw_Diagnosis d ON
 			c.id=d.rf_idCase  											
-					INNER JOIN dbo.t_DeadPeople dp ON
+					INNER JOIN [PDAccountOMSReports].[dbo].[t_DeadPeople] dp ON
 			ps.ENP=dp.enp                  
 WHERE f.DateRegistration>=@dtBeginReg AND f.DateRegistration<=@dtEndReg AND a.rf_idSMO=@codeSMO AND a.ReportYear>=2017
 

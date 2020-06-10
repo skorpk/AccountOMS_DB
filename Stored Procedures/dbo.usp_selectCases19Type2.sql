@@ -38,7 +38,7 @@ IF ( @p_AccountCode IS NOT NULL )
 			v16.Code TypeDisp, --Тип диспансеризации
 			v16.Name TypeDispName,
 			case when c.IsFirstDS=1 then 'Да' when c.IsFirstDS=0 then 'Нет' else 'Не указано' end DS1_PR, --Выявлен впервые
-			case when c.IsNeedDisp=1 then 'Состоит на ДН' when c.IsNeedDisp=2 then 'Взят на ДН' when c.IsNeedDisp=2 then 'Не подлежит ДН' end PR_D_N, --Диспансерное наблюдение
+			case when c.IsNeedDisp=1 then 'Состоит на ДН' when c.IsNeedDisp=2 then 'Взят на ДН' when c.IsNeedDisp=3 then 'Не подлежит ДН' end PR_D_N, --Диспансерное наблюдение
 			rtrim(mes.MES)+' — '+ mu.[MUName] CODE_MES1, --Код ЗС
 			case when di.IsMobileTeam=0 then 'Нет' when di.IsMobileTeam=1 then 'Да' end VBR,--Признак ММБ
 			case when di.TypeFailure=0 then 'Нет' when di.TypeFailure=1 then 'Да' end P_OTK, --Признак отказа

@@ -1,4 +1,3 @@
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
@@ -19,13 +18,14 @@ SELECT [rf_idCase]
 	  ,s.[MUName]
       ,[DirectionMO]+' — '+mo.NameS DirectionMO --МО, в которое направили
   FROM [AccountOMS].[dbo].[t_Prescriptions] p
+  inner join dbo.t_Case c on c.id = p.[rf_idCase]
   left join [oms_nsi].[dbo].[sprV021] v21 on rtrim(p.rf_idV015)=v21.[SprV021Id]
   left join [oms_nsi].[dbo].[sprV029] v29 on v29.sprV029Id=p.TypeExamination
   left join [oms_nsi].[dbo].[sprV002] v2 on v2.Id=p.[rf_dV002]
-  left join [oms_nsi].[dbo].[sprV020] v20 on v20.[sprV020Id]=p.[rf_idV020]
+  left join [oms_nsi].[dbo].[sprV020] v20 on v20.[sprV020Id]=p.[rf_idV020] and c.DateEnd between v20.DateBeg and v20.DateEnd
   left join [dbo].[vw_sprT001] mo on mo.CodeM=p.[DirectionMO]
   LEFT JOIN [dbo].[vw_sprMU] s on s.[MU]=p.[DirectionMU]
-  where [rf_idCase]=@rf_idCase
+  where p.[rf_idCase]=@rf_idCase
   order by [DirectionDate]
 
 GO

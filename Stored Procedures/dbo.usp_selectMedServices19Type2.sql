@@ -32,7 +32,7 @@ SELECT m.[rf_idCase]
   --LEFT JOIN [dbo].[vw_sprMU] s on s.[MU]=m.[MU]
   LEFT JOIN [dbo].[vw_sprNomenclMU] surg on surg.[CodeMU]=m.[MUSurgery] AND m.DateHelpEnd>=surg.DateBeg AND c.DateEnd<surg.DateEnd
   where m.[rf_idCase]=@rf_idCase
-  order by m.[MU]
+  order by m.MUGroupCode,m.MUUnGroupCode,m.MUCode
 
 GO
 

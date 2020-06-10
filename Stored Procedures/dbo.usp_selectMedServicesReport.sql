@@ -27,7 +27,7 @@ SELECT  m.[rf_idCase]
   LEFT JOIN [dbo].[vw_sprMU] s on s.[MU]=m.[MU]
   LEFT JOIN [OMS_NSI].[dbo].[V001] surg on m.[MUSurgery]=surg.[IDRB] and c.DateEnd>=case when surg.DATEBEG='' then '2001-01-01' else surg.DATEBEG end and c.DateEnd<=case when surg.DATEEND='' then '2222-01-01' else surg.DATEEND end
                where m.[rf_idCase]=@p_CaseId   
-order by m.[MUSurgery],m.[MU],[DateHelpBegin]
+order by m.[MUSurgery],m.MUGroupCode,m.MUUnGroupCode,m.MUCode,[DateHelpBegin]
 END
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectMedServicesReport] TO [AccountsOMS]

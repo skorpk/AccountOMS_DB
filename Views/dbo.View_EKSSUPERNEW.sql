@@ -2,16 +2,11 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW [dbo].[vw_sprT001_Report]
+CREATE VIEW [dbo].[View_EKSSUPERNEW]
 AS
-SELECT  t.mcod, LEFT(t1.tfomsCode, 6) AS CodeM, t1.tfomsCode AS CodeLPU, t1.mNameF AS Namef, t1.mNameS AS NameS, t1.inn, t1.kpp, t1.fam AS fam_ruk, t1.im AS Im_ruk, t1.ot AS Ot_ruk, 
-               t1.phone, t1.eMail AS Mail, t1.beginDate AS DateBeg, t1.endDate AS DateEnd, f.FilialId, f.filialName, t1.ogrn, t.pfa, t.MOId, t.pfs, t.smp, t.pfv
-FROM     oms_nsi.dbo.tMO AS t INNER JOIN
-               oms_nsi.dbo.tMO AS t1 ON t.MOId = t1.rf_FirstLvlId INNER JOIN
-               oms_nsi.dbo.tFilial AS f ON t1.rf_FilialId = f.FilialId
-WHERE  (t1.canBill = 1)
-GO
-GRANT SELECT ON  [dbo].[vw_sprT001_Report] TO [db_AccountOMS]
+SELECT  Ид, SUM(Eks) AS Eks
+FROM     dbo.View_EKSNEW
+GROUP BY Ид
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
 Begin DesignProperties = 
@@ -84,32 +79,12 @@ Begin DesignProperties =
          Left = 0
       End
       Begin Tables = 
-         Begin Table = "t"
+         Begin Table = "View_EKSNEW"
             Begin Extent = 
                Top = 6
-               Left = 38
-               Bottom = 114
-               Right = 225
-            End
-            DisplayFlags = 280
-            TopColumn = 47
-         End
-         Begin Table = "t1"
-            Begin Extent = 
-               Top = 6
-               Left = 263
-               Bottom = 114
-               Right = 450
-            End
-            DisplayFlags = 280
-            TopColumn = 0
-         End
-         Begin Table = "f"
-            Begin Extent = 
-               Top = 138
                Left = 42
-               Bottom = 267
-               Right = 193
+               Bottom = 105
+               Right = 216
             End
             DisplayFlags = 280
             TopColumn = 0
@@ -123,7 +98,7 @@ Begin DesignProperties =
       End
    End
    Begin CriteriaPane = 
-      Begin ColumnWidths = 11
+      Begin ColumnWidths = 12
          Column = 1440
          Alias = 897
          Table = 1168
@@ -140,9 +115,9 @@ Begin DesignProperties =
       End
    End
 End
-', 'SCHEMA', N'dbo', 'VIEW', N'vw_sprT001_Report', NULL, NULL
+', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSSUPERNEW', NULL, NULL
 GO
 DECLARE @xp int
 SELECT @xp=1
-EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'dbo', 'VIEW', N'vw_sprT001_Report', NULL, NULL
+EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'dbo', 'VIEW', N'View_EKSSUPERNEW', NULL, NULL
 GO

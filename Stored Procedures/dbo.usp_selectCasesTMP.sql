@@ -286,6 +286,9 @@ AS
 
   
   
+
+GO
+GRANT EXECUTE ON  [dbo].[usp_selectCasesTMP] TO [AccountsOMS]
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectCasesTMP] TO [db_AccountOMS]
 GO

@@ -265,6 +265,23 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND dd.DS_ONK=1 
 AND dm.TypeDirection IN (2) and c.rf_idV002 IN(18,60) 
 
+INSERT #tCasesM
+SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient,ps.ENP,r.AttachLPU, c.AmountPayment AS AmountPay ,f.CodeM, ABS(DATEDIFF(DAY, dm.DirectionDate,c.DateBegin)) AS DiffDay
+FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
+			f.id=a.rf_idFiles
+					INNER JOIN dbo.t_RecordCasePatient r ON
+			a.id=r.rf_idRegistersAccounts					
+					INNER JOIN dbo.t_Case c  ON
+			r.id=c.rf_idRecordCasePatient
+					INNER JOIN dbo.vw_DS_ONK dd ON
+			c.id=dd.rf_idCase 			
+					INNER JOIN dbo.t_PatientSMO ps ON
+			r.id=ps.rf_idRecordCasePatient	
+					INNER JOIN dbo.t_DirectionMU dm ON
+			c.id=dm.rf_idCase					 												   					  					      			
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND dd.DS_ONK=1 
+AND dm.TypeDirection =1 and c.rf_idV002 IN(18,60) AND dm.DirectionMO='340017'
+
 
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
 FROM #tCasesM p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDeduction

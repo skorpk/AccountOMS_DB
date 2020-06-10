@@ -11,3 +11,5 @@ CREATE TABLE [dbo].[t_Case_UnitCode_V006]
 GO
 CREATE UNIQUE NONCLUSTERED INDEX [IX_IdCase] ON [dbo].[t_Case_UnitCode_V006] ([rf_idCase], [UnitCode]) INCLUDE ([V006]) WITH (IGNORE_DUP_KEY=ON) ON [AccountMU]
 GO
+CREATE NONCLUSTERED INDEX [<Name of Missing Index, sysname,>] ON [dbo].[t_Case_UnitCode_V006] ([UnitCode]) INCLUDE ([rf_idCase]) ON [AccountMU]
+GO

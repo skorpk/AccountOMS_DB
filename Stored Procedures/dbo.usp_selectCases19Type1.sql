@@ -47,6 +47,7 @@ IF ( @p_AccountCode IS NOT NULL )
 			sop.GetDatePaper TAL_D,sop.DateHospitalization TAL_P, sop.NumberTicket TAL_NUM,UPPER(rpa.Fam + ' ' + rpa.Im + ' ' + ISNULL(rpa.Ot, '')) AS Сопровождающий,nv.[DateVizit] NEXT_VISIT,
 			case when slk.[SL_K]=0 then 'Не применялся' when slk.[SL_K]=1 then 'Применялся' end SL_K/*признак КСЛП*/, c.IT_SL /*значение КСЛП*/,kiro.[ValueKiro], n18.REAS_NAME DS1_T, n2.[DS_St]+' ('+n2.[KOD_St]+')' STAD,
 			n3.[KOD_T] ONK_T,n4.[KOD_N] ONK_N,n5.[KOD_M] ONK_M, case when osl.[IsMetastasis]=1 then 'Выявлены' else 'Не выявлены' end MTSTZ,osl.[TotalDose] SOD, osl.K_FR,osl.WEI,osl.HEI,osl.BSA
+			,case when pov.DN=1 then 'Состоит' when pov.DN=2 then 'Взят' when pov.DN=4 then 'Снят по причине выздоровления' when pov.DN=6 then 'Снят по другим причинам' end PR_D_N --Диспансерное наблюдение
 	FROM    dbo.t_Case AS c	 
 	INNER JOIN dbo.t_RecordCasePatient AS rcp ON c.rf_idRecordCasePatient = rcp.id
 	inner join dbo.t_PatientSMO psmo on psmo.rf_idRecordCasePatient=rcp.id
@@ -546,7 +547,8 @@ select c.CaseId,c.[Окончен],osl.id osl_id,c.*,cast(v9.Id as varchar(4))+'
 	v14.[NAME] FOR_POM,v2.name AS Профиль,v10.Name AS СпособОплаты, v18.[Name] VID_HMP, v19.Name METOD_HMP, v20.name PROFIL_K, md.name_short PODR, mp.name_short LPU_1/*МОМП*/,v25.IDPC+' — '+v25.N_PC P_CEL,
 	sop.GetDatePaper TAL_D,sop.DateHospitalization TAL_P, sop.NumberTicket TAL_NUM,UPPER(rpa.Fam + ' ' + rpa.Im + ' ' + ISNULL(rpa.Ot, '')) AS Сопровождающий,nv.[DateVizit] NEXT_VISIT,
 	case when slk.[SL_K]=0 then 'Не применялся' when slk.[SL_K]=1 then 'Применялся' end SL_K/*КСЛП*/,kiro.[ValueKiro], n18.REAS_NAME DS1_T, n2.[DS_St]+' ('+n2.[KOD_St]+')' STAD,
-	n3.[KOD_T] ONK_T,n4.[KOD_N] ONK_N,n5.[KOD_M] ONK_M, case when osl.[IsMetastasis]=1 then 'Выявлены' else 'Не выявлены' end MTSTZ,osl.[TotalDose] SOD, osl.K_FR, osl.WEI,osl.HEI,osl.BSA
+	n3.[KOD_T] ONK_T,n4.[KOD_N] ONK_N,n5.[KOD_M] ONK_M, case when osl.[IsMetastasis]=1 then 'Выявлены' else 'Не выявлены' end MTSTZ,osl.[TotalDose] SOD, osl.K_FR, osl.WEI,osl.HEI,osl.BSA,
+	case when pov.DN=1 then 'Состоит' when pov.DN=2 then 'Взят' when pov.DN=4 then 'Снят по причине выздоровления' when pov.DN=6 then 'Снят по другим причинам' end PR_D_N --Диспансерное наблюдение
 from #t c
 INNER JOIN OMS_NSI.dbo.sprV005 AS v5 ON c.rf_idV005 = v5.Id
 INNER JOIN [OMS_NSI].[dbo].[sprSMO] AS SMO ON c.[rf_idSMO] = SMO.[SMOKOD]
@@ -593,7 +595,7 @@ left JOIN [oms_nsi].[dbo].[sprN003] n3 on n3.[ID_T]=osl.[rf_idN003] and c.[Ок�
 left JOIN [oms_nsi].[dbo].[sprN004] n4 on n4.[ID_N]=osl.[rf_idN004] and c.[Окончен] between n4.DateBeg and n4.DateEnd
 left JOIN [oms_nsi].[dbo].[sprN005] n5 on n5.[ID_M]=osl.[rf_idN005] and c.[Окончен] between n5.DateBeg and n5.DateEnd
 left join [oms_nsi].[dbo].[sprV027] v27 on v27.IDCZ=c.C_ZABid and c.[Окончен] between v27.DateBeg and v27.DateEnd
---order by c.[Окончен]
+order by c.CaseId
 
 
 --drop table #lpu

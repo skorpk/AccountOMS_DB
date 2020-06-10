@@ -579,7 +579,7 @@ FROM OPENXML (@ipatient, 'PERS_LIST/ZGLV',2)
 INSERT #t8(ID_PAC, FAM, IM, OT, W, DR, TEL, FAM_P, IM_P, OT_P, W_P, DR_P, MR, DOCTYPE, DOCSER, DOCNUM, SNILS, OKATOG, OKATOP, COMENTP,DOCDATE,DOCORG)
 SELECT ID_PAC,CASE WHEN LEN(FAM)=0 THEN NULL ELSE FAM END ,CASE WHEN LEN(IM)=0 THEN NULL ELSE IM END ,
 		CASE WHEN LEN(OT)=0 THEN NULL ELSE OT END ,W,replace(DR,'-',''), TEL,FAM_P,IM_P,OT_P,W_P,replace(DR_P,'-',''),MR,DOCTYPE,DOCSER,DOCNUM,SNILS,OKATOG,OKATOP,COMENTP
-		,DOCDATE,DOCORG
+		,DOCDATE,CASE WHEN LEN(DOCORG)<1 THEN NULL ELSE DOCORG end
 FROM OPENXML (@ipatient, 'PERS_LIST/PERS',2)
 	WITH(
 			ID_PAC NVARCHAR(36),
@@ -1484,6 +1484,85 @@ begin
 			AND ISNULL(t.DOCDATE,'22220101')=ISNULL(t1.DOCDATE,'22220101')
 			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
 
+---------------------------------------------------------------------------------------------------------------------
+	SELECT t1.*
+	from(
+			select distinct r1.ID_Patient,rp.Fam,rp.Im,rp.Ot,rp.rf_idV005 as W,rp.BirthDay as DR,ra.Fam as Fam_P, ra.Im as IM_P, ra.Ot as Ot_P,ra.rf_idV005 as W_P,
+				  ra.BirthDay as DR_P, rp.BirthPlace as MR, doc.rf_idDocumentType as DOCTYPE, doc.SeriaDocument as DOCSER, doc.NumberDocument as DOCNUM, 
+				  doc.SNILS, doc.OKATO as OKATOG, doc.OKATO_Place as OKATOP, rp.TEL, doc.DOCDATE,doc.DOCORG
+			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+				f.id=a.rf_idFilesBack
+				and f.rf_idFiles=@idF			
+									inner join RegisterCases.dbo.t_RecordCaseBack r on
+				a.id=r.rf_idRegisterCaseBack
+									INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+				r.id=cp.rf_idRecordCaseBack					
+				and cp.TypePay=1
+									inner join RegisterCases.dbo.t_RecordCase r1 on
+				r.rf_idRecordCase=r1.id
+									inner join RegisterCases.dbo.t_PatientBack p on
+				r.id=p.rf_idRecordCaseBack
+				and p.rf_idSMO=@smo
+									inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
+				r1.id=rf.rf_idRecordCase
+									inner join RegisterCases.dbo.t_RegisterPatient rp on
+				rf.rf_idRegisterPatient=rp.id
+				and rp.rf_idFiles=@idF
+									left join RegisterCases.dbo.t_RegisterPatientAttendant ra on
+				rp.id=ra.rf_idRegisterPatient
+									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
+				rp.id=doc.rf_idRegisterPatient
+		) t right join #t8 t1 on
+			t.ID_Patient=t1.ID_PAC
+			and ISNULL(t.FAM,'НЕТ') =ISNULL(t1.FAM,'НЕТ') 
+			and ISNULL(t.IM,'НЕТ') =ISNULL(t1.IM,'НЕТ') 
+			and ISNULL(t.OT,'НЕТ')=ISNULL(t1.OT,'НЕТ')
+			and t.W =t1.W 
+			and t.DR =t1.DR 
+			and isnull(t.FAM_P,'')=isnull(t1.FAM_P,'')
+			and isnull(t.IM_P,'')=isnull(t1.IM_p,'')
+			and isnull(t.OT_P,'') =isnull(t1.OT_P,'') 
+			--and isnull(t.W_P,'') =isnull(t1.W_P,'') 
+			and isnull(t.DR_P,'') =isnull(t1.DR_P,'') 
+			and isnull(t.MR,'') =isnull(t1.MR,'') 
+			and isnull(t.DOCTYPE,'')=isnull(t1.DOCTYPE,'')
+			and isnull(t.DOCSER,'') =isnull(t1.DOCSER,'') 
+			and isnull(t.DOCNUM,'') =isnull(t1.DOCNUM,'') 
+			and isnull(t.SNILS,'') =isnull(t1.SNILS,'') 
+			and isnull(t.OKATOG,'') =isnull(t1.OKATOG,'') 
+			and isnull(t.OKATOP,'') =isnull(t1.OKATOP,'') 
+			AND ISNULL(t.TEL,'bla-bla')=ISNULL(t1.TEL,'bla-bla')
+			AND ISNULL(t.DOCDATE,'22220101')=ISNULL(t1.DOCDATE,'22220101')
+			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
+		WHERE t.ID_Patient IS NULL
+
+		select distinct r1.ID_Patient,rp.Fam,rp.Im,rp.Ot,rp.rf_idV005 as W,rp.BirthDay as DR,ra.Fam as Fam_P, ra.Im as IM_P, ra.Ot as Ot_P,ra.rf_idV005 as W_P,
+				  ra.BirthDay as DR_P, rp.BirthPlace as MR, doc.rf_idDocumentType as DOCTYPE, doc.SeriaDocument as DOCSER, doc.NumberDocument as DOCNUM, 
+				  doc.SNILS, doc.OKATO as OKATOG, doc.OKATO_Place as OKATOP, rp.TEL, doc.DOCDATE,doc.DOCORG
+			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+				f.id=a.rf_idFilesBack
+				and f.rf_idFiles=@idF			
+									inner join RegisterCases.dbo.t_RecordCaseBack r on
+				a.id=r.rf_idRegisterCaseBack
+									INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+				r.id=cp.rf_idRecordCaseBack					
+				and cp.TypePay=1
+									inner join RegisterCases.dbo.t_RecordCase r1 on
+				r.rf_idRecordCase=r1.id
+									inner join RegisterCases.dbo.t_PatientBack p on
+				r.id=p.rf_idRecordCaseBack
+				and p.rf_idSMO=@smo
+									inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
+				r1.id=rf.rf_idRecordCase
+									inner join RegisterCases.dbo.t_RegisterPatient rp on
+				rf.rf_idRegisterPatient=rp.id
+				and rp.rf_idFiles=@idF
+									left join RegisterCases.dbo.t_RegisterPatientAttendant ra on
+				rp.id=ra.rf_idRegisterPatient
+									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
+				rp.id=doc.rf_idRegisterPatient
+	WHERE r1.ID_Patient='8CD79D5D-E0DC-0C40-E053-CD9115AC69D3'
+---------------------------------------------------------------------------------------------------------------------
 	select @persA=COUNT(*) from #t8
 
 	if(@persA-@persRC)<>0	

@@ -9,7 +9,7 @@ INSERT tmp_FileSynch
 SELECT f.id
 FROM dbo.t_File	f LEFT JOIN dbo.t_FileSynch fs ON
 			f.id=fs.rf_idFile
-WHERE fs.rf_idFile IS NULL
+WHERE fs.rf_idFile IS NULL /*AND f.DateRegistration<'20200601'*/
 
  --импорт определенных счетов на открытый сервер
  --id файлов берем из базы AccountOMS

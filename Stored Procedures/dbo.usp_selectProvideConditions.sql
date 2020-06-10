@@ -11,6 +11,9 @@ SELECT [Code]
   FROM [dbo].[t_ProvideConditions]  pc
   JOIN   fn_iter_intlist_to_table(@p_ConditionCodes) i ON pc.Code = i.number
 END
+
+GO
+GRANT EXECUTE ON  [dbo].[usp_selectProvideConditions] TO [AccountsOMS]
 GO
 GRANT EXECUTE ON  [dbo].[usp_selectProvideConditions] TO [db_AccountOMS]
 GO

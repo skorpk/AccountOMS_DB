@@ -9,9 +9,9 @@ GO
       DECLARE @pos      int,
               @textpos  int,
               @chunklen smallint,
-              @str      nvarchar(4000),
-              @tmpstr   nvarchar(4000),
-              @leftover nvarchar(4000)
+              @str      nvarchar(max),
+              @tmpstr   nvarchar(max),
+              @leftover nvarchar(max)
 
       SET @textpos = 1
       SET @leftover = ''

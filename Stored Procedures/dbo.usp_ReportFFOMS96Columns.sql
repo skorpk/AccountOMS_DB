@@ -17,6 +17,8 @@ DECLARE @lastMonth TINYINT, --последний отчетный месяц
 		@dateEndCase DATE
   
  set	@dateEndCase=DATEADD(MONTH,1,CAST((CAST(@reportYear AS CHAR(4))+RIGHT('0'+CAST(@reportMonth AS VARCHAR(2)),2)+'01') AS DATE))      
+
+ 
 --=======================================================================================================================--
 ----берем с диагнозом из списка
 SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay,f.TypeFile
@@ -71,6 +73,60 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient	
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase AND c.rf_idV006=3 AND f.TypeFile='F'
+----------------------------------------------------------2019-----------------------------------------------------------------------
+----берем с диагнозом из списка
+SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay,f.TypeFile
+			,a.rf_idSMO AS CodeSMO, a.ReportMonth,a.Letter,c.Age, c.DateEnd	 ,a.ReportYear,c.DateBegin
+INTO #tCases2019
+FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
+			f.id=a.rf_idFiles
+					INNER JOIN dbo.t_RecordCasePatient r ON
+			a.id=r.rf_idRegistersAccounts					
+					INNER JOIN dbo.t_Case c  ON
+			r.id=c.rf_idRecordCasePatient
+					INNER JOIN dbo.t_Diagnosis d ON
+			c.id=d.rf_idCase
+			AND d.TypeDiagnosis=1
+					INNER JOIN #tD dd ON
+			d.DiagnosisCode=dd.DiagnosisCode     										     
+					INNER JOIN dbo.t_PatientSMO ps ON
+			r.id=ps.rf_idRecordCasePatient																	   					  					      
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006<4 AND f.TypeFile='H'
+
+CREATE UNIQUE NONCLUSTERED INDEX QU_Temp2019 ON #tCases2019(rf_idRecordCasePatient,rf_idCase) WITH IGNORE_DUP_KEY
+INSERT #tCases2019
+SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay, f.TypeFile
+		,a.rf_idSMO AS CodeSMO,a.ReportMonth,a.Letter ,c.Age , c.DateEnd,a.ReportYear,c.DateBegin
+FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
+			f.id=a.rf_idFiles
+					INNER JOIN dbo.t_RecordCasePatient r ON
+			a.id=r.rf_idRegistersAccounts					
+					INNER JOIN dbo.t_Case c  ON
+			r.id=c.rf_idRecordCasePatient
+					INNER JOIN dbo.t_Diagnosis d ON
+			c.id=d.rf_idCase
+					INNER JOIN #tD dd ON
+			d.DiagnosisCode=dd.DiagnosisCode     										     
+					INNER JOIN dbo.t_PatientSMO ps ON
+			r.id=ps.rf_idRecordCasePatient	
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006=3 AND f.TypeFile='F'
+
+INSERT #tCases2019
+SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay, f.TypeFile
+		,a.rf_idSMO AS CodeSMO,a.ReportMonth,a.Letter ,c.Age , c.DateEnd,a.ReportYear ,c.DateBegin
+FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
+			f.id=a.rf_idFiles
+					INNER JOIN dbo.t_RecordCasePatient r ON
+			a.id=r.rf_idRegistersAccounts					
+					INNER JOIN dbo.t_Case c  ON
+			r.id=c.rf_idRecordCasePatient
+					INNER JOIN dbo.t_DS2_Info d ON
+			c.id=d.rf_idCase
+					INNER JOIN #tD dd ON
+			d.DiagnosisCode=dd.DiagnosisCode     										     
+					INNER JOIN dbo.t_PatientSMO ps ON
+			r.id=ps.rf_idRecordCasePatient	
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006=3 AND f.TypeFile='F'
 
 
 --=======================================================================================================================--
@@ -126,6 +182,14 @@ FROM #tCases p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDe
 			p.rf_idCase=r.rf_idCase
  --=======================================================================================================================--
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
+FROM #tCases2019 p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDeduction
+								FROM dbo.t_PaymentAcceptedCase2 c
+								WHERE c.DateRegistration>=@dateStart AND c.DateRegistration<@dateEndAkt AND TypeCheckup=1	 
+								GROUP BY c.rf_idCase
+							) r ON
+			p.rf_idCase=r.rf_idCase
+ --=======================================================================================================================--
+UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
 FROM #tCase_DS_ONK p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS AmountDeduction
 								FROM dbo.t_PaymentAcceptedCase2 c
 								WHERE c.DateRegistration>=@dateStart AND c.DateRegistration<@dateEndAkt AND TypeCheckup=1	 
@@ -134,6 +198,10 @@ FROM #tCase_DS_ONK p INNER JOIN (SELECT c.rf_idCase,SUM(c.AmountDeduction) AS Am
 			p.rf_idCase=r.rf_idCase
 
 SELECT @lastMonth=MAX(ReportMonth) FROM #tCases WHERE AmountPay>0
+
+--SELECT MAX(ReportMonth) FROM #tCases 
+
+
 
 ---------------------------------От Антоновой---------------------------------------------
 SELECT SUM(Col7) AS Col7,SUM(Col8) AS Col8,SUM(Col9) AS Col9,SUM(Col7) AS Col10,SUM(Col11) AS Col11,SUM(Col12) AS Col12,SUM(Col13) AS Col13
@@ -199,6 +267,7 @@ FROM (
 			) t
 		WHERE id=1 AND CodeSMO='34'
 		UNION ALL
+		----Графы 14-16
 		SELECT 0,0,0,0,0,0,COUNT(DISTINCT ENP),0,0
 		FROM (      
 				SELECT c.ENP
@@ -212,32 +281,85 @@ FROM (
 				FROM #tCases c INNER JOIN dbo.t_DS2_Info cc ON
 							c.rf_idCase=cc.rf_idCase         
 				WHERE amountPay>0 AND TypeFile='F' AND cc.IsNeedDisp IN (1,2) AND c.Letter IN('O','R','F','D','U')
+				UNION ALL				
+				SELECT c.ENP
+				FROM #tCases c INNER JOIN dbo.t_Case cc ON
+							c.rf_idCase=cc.id        
+				WHERE amountPay>0 AND TypeFile='F' AND cc.IsNeedDisp IN (1,2) AND c.Letter IN('O','R','F','D','U')
+				UNION ALL--------------2019-------------------------
+                SELECT c.ENP
+				FROM #tCases2019 c INNER JOIN dbo.t_PurposeOfVisit pv ON
+							c.rf_idCase=pv.rf_idCase              
+								INNER JOIN dbo.t_Case cc ON
+							c.rf_idCase=cc.id                                
+				WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND cc.rf_idV002 IN(60,18) AND pv.DN IN(1,2)
+				UNION ALL				
+				SELECT c.ENP
+				FROM #tCases2019 c INNER JOIN dbo.t_DS2_Info cc ON
+							c.rf_idCase=cc.rf_idCase         
+				WHERE amountPay>0 AND TypeFile='F' AND cc.IsNeedDisp IN (1,2) AND c.Letter IN('O','R','F','D','U')
+				UNION ALL				
+				SELECT c.ENP
+				FROM #tCases2019 c INNER JOIN dbo.t_Case cc ON
+							c.rf_idCase=cc.id        
+				WHERE amountPay>0 AND TypeFile='F' AND cc.IsNeedDisp IN (1,2) AND c.Letter IN('O','R','F','D','U')
 			)t
 			UNION ALL
-			SELECT 0,0,0,0,0,0,0,COUNT(DISTINCT ENP),0
+			SELECT 0,0,0,0,0,0,0,COUNT(DISTINCT ENP) AS Col15,0
 			FROM (      
 					SELECT c.ENP
 					FROM #tCases c INNER JOIN dbo.t_PurposeOfVisit pv ON
 								c.rf_idCase=pv.rf_idCase              
 									INNER JOIN dbo.t_Case cc ON
 								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.rf_idV006=3
+					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
+						  AND cc.rf_idV002 IN(60,18) AND pv.DN=2 
+					UNION ALL				
+					SELECT c.ENP
+					FROM #tCases c INNER JOIN dbo.t_DS2_Info cc ON
+							c.rf_idCase=cc.rf_idCase                            
+					WHERE amountPay>0 AND TypeFile='F' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.IsNeedDisp =2
 					UNION ALL				
 					SELECT c.ENP
 					FROM #tCases c INNER JOIN dbo.t_Case cc ON
-								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='F' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1))
+							c.rf_idCase=cc.id                        
+					WHERE amountPay>0 AND TypeFile='F' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.IsNeedDisp=2
 				)t
 			UNION ALL
-			SELECT 0,0,0,0,0,0,0,0,COUNT(DISTINCT ENP)
-			FROM (      
+			SELECT 0,0,0,0,0,0,0,0,COUNT(DISTINCT ENP) AS Col16
+			FROM (   
 					SELECT c.ENP
 					FROM #tCases c INNER JOIN dbo.t_PurposeOfVisit pv ON
 								c.rf_idCase=pv.rf_idCase              
 									INNER JOIN dbo.t_Case cc ON
 								c.rf_idCase=cc.id                                
-					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)) AND cc.rf_idV006=3
-						 AND c.ReportMonth=@lastMonth					
+					WHERE amountPay>0 AND TypeFile='H' AND pv.rf_idV025='1.3' AND cc.rf_idV002 IN(60,18) AND pv.DN=2 AND pv.dn =2 AND c.ReportMonth=@reportMonth
+							AND NOT EXISTS(SELECT  1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)
+											UNION ALL 
+											SELECT 1 FROM #tCases cc WHERE cc.ENP=c.enp AND cc.ReportMonth<@reportMonth
+											)
+						  
+					UNION ALL				
+					SELECT c.ENP
+					FROM #tCases c INNER JOIN dbo.t_DS2_Info cc ON
+							c.rf_idCase=cc.rf_idCase                            
+					WHERE amountPay>0 AND TypeFile='F' AND c.ReportMonth=@reportMonth AND cc.IsNeedDisp=2
+						 AND NOT EXISTS(
+										SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)
+										UNION ALL 
+										SELECT 1 FROM #tCases cc WHERE cc.ENP=c.enp AND cc.ReportMonth<@reportMonth
+										) 
+						
+					UNION ALL				
+					SELECT c.ENP
+					FROM #tCases c INNER JOIN dbo.t_Case cc ON
+							c.rf_idCase=cc.id                        
+					WHERE amountPay>0 AND TypeFile='F' AND c.ReportMonth=@reportMonth AND cc.IsNeedDisp =2
+						 AND NOT EXISTS(
+										SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=c.ENP AND ReportYear=(@reportYear-1)
+										UNION ALL 
+										SELECT 1 FROM #tCases cc WHERE cc.ENP=c.enp AND cc.ReportMonth<@reportMonth
+										) 
 				)t
 		      
 	)t

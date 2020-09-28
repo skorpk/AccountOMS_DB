@@ -176,7 +176,7 @@ GROUP BY p.rf_idCase, s.smocod,p.PID,p.CodeM, l.NAMES ,s.sNameS ,p.DateRegistrat
 		v9.name ,v12.name ,v4.name ,pp.FAM,pp.IM,pp.OT,pp.DR,p.NumberPolis,p.AttachLPU,l1.NAMES,p.Age,CASE WHEN pp.W=1 THEN 'М' ELSE 'Ж' END,v6.name
 ) 
 SELECT  --CodeM,
-		SMO,LPU,
+		SMO,cast(CodeM as varchar(6)) +' — '+ LPU,
 		CAST(DateRegistration AS DATE) AS dateregistration,
 		Account,DateRegister,
 		idRecordCase

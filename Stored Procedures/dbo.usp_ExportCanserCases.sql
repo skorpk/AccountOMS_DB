@@ -28,7 +28,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			r.id=ps.rf_idRecordCasePatient	
 					INNER JOIN t_DS_ONK_REAB dd ON
 			c.id=dd.rf_idCase																   					  					      
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND dd.DS_ONK=1 AND f.TypeFile='H'	 AND c.rf_idv006<4
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear AND dd.DS_ONK=1 AND f.TypeFile='H'	 AND c.rf_idv006<4
 	AND a.rf_idSMO<>'34'
 
 CREATE UNIQUE NONCLUSTERED INDEX QU_IXCase ON #tCases(rf_idCase) WITH IGNORE_DUP_KEY
@@ -48,7 +48,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			r.id=ps.rf_idRecordCasePatient	
 					INNER JOIN dbo.t_DispInfo dd ON
 			c.id=dd.rf_idCase																   					  					      
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND dd.IsOnko=1 AND f.TypeFile='F'	AND c.rf_idv006<4
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear AND dd.IsOnko=1 AND f.TypeFile='F'	AND c.rf_idv006<4
 	AND a.rf_idSMO<>'34'
 --основной диагноз
 INSERT #tCases
@@ -65,7 +65,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			c.id=d.rf_idCase																   					  					      
 					INNER JOIN #tD td ON
 			d.DiagnosisCode=td.DiagnosisCode                  
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND d.TypeDiagnosis IN(1,3) AND c.rf_idv006<4
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear AND d.TypeDiagnosis IN(1,3) AND c.rf_idv006<4
 	  AND a.rf_idSMO<>'34'
 
 INSERT #tCases
@@ -82,7 +82,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			c.id=dd.rf_idCase			
 					INNER JOIN #tD td ON
 			dd.DiagnosisCode=td.DiagnosisCode 													   					  					      
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND f.TypeFile='F'	AND c.rf_idv006<4
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear AND f.TypeFile='F'	AND c.rf_idv006<4
 	  AND a.rf_idSMO<>'34'
 --добавить выборку сведений по диспансеризации и профосмотру по пациенту включенному в КанцерРегистр.
 
@@ -120,7 +120,7 @@ AS
 				ps.ENP=ce.ENP
 						INNER JOIN dbo.vw_DS_ONK dd ON
 				c.id=dd.rf_idCase								
-	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear and c.rf_idv006<4	AND dd.DS_ONK=1
+	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear and c.rf_idv006<4	AND dd.DS_ONK=1
 			AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=ce.ENP)	AND ce.AmountPayment>0
 	UNION ALL
 	SELECT c.id AS rf_idCase, ps.ENP,cc.DateEnd,0
@@ -140,7 +140,7 @@ AS
 				c.id=d.rf_idCase																   					  					      
 						INNER JOIN #tD td ON
 				d.DiagnosisCode=td.DiagnosisCode								
-	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear and c.rf_idv006<4	AND d.TypeDiagnosis IN(1,3)
+	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear and c.rf_idv006<4	AND d.TypeDiagnosis IN(1,3)
 			AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=ce.ENP)	AND ce.AmountPayment>0
 	UNION ALL
 	SELECT c.id AS rf_idCase, ps.ENP,cc.DateEnd,0
@@ -160,7 +160,7 @@ AS
 			c.id=d.rf_idCase																   					  					      
 					INNER JOIN #tD td ON
 			d.DiagnosisCode=td.DiagnosisCode								
-	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear AND ce.AmountPayment>0 AND c.rf_idv006<4	
+	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear AND ce.AmountPayment>0 AND c.rf_idv006<4	
 		AND NOT EXISTS(SELECT 1 FROM dbo.t_CasesOnkologia2018 WHERE ENP=ce.ENP)
 ), cteFirst
 AS
@@ -194,7 +194,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 				c.id=ce1.rf_idcase
 						INNER JOIN dbo.t_DirectionMU dm ON
 				c.id=dm.rf_idCase   						
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear and c.rf_idv006<4	AND dm.TypeDirection=2 
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear and c.rf_idv006<4	AND dm.TypeDirection=2 
 		AND ce1.AmountPayment>0
 )
 INSERT dbo.tmp_PeopleBiopsy( ENP, DirectionDate,rf_idCase ) SELECT ENP,DirectionDate,rf_idCase FROM cteBiopsy WHERE idRow=1
@@ -258,7 +258,7 @@ AS
 				d.DiagnosisCode=td.DiagnosisCode								
 						INNER JOIN dbo.t_PurposeOfVisit pv ON
 				c.id=pv.rf_idCase                      
-	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear and c.rf_idv006=3	AND d.TypeDiagnosis =1 
+	WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear and c.rf_idv006=3	AND d.TypeDiagnosis =1 
 			AND pv.rf_idV025='1.3' AND ce.AmountPayment>0	
 )
 INSERT dbo.tmp_PeoplePCEL( ENP, DateEnd,rf_idCase )
@@ -283,7 +283,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 				ps.ENP=ce.ENP		
 						INNER JOIN dbo.t_ONK_USL u ON
 				c.id=u.rf_idCase				                  
-WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear=@reportYear and c.rf_idv006<3 AND u.rf_idN013<5 AND ce.AmountPayment>0
+WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND a.ReportYear>=@reportYear and c.rf_idv006<3 AND u.rf_idN013<5 AND ce.AmountPayment>0
 )
 INSERT dbo.tmp_PeopleONK_USL( ENP, DateEnd, USL_TIP,rf_idCase )
 SELECT ENP,DateEnd ,USL_TIP,rf_idCase from cteN13 WHERE idRow=1
@@ -341,7 +341,7 @@ INSERT dbo.tmp_PeopleEND( ENP, DateEnd, typeEnd )
 -------------------Выводим всю историю по онко больному-----------------
 PRINT('tmp_PeopleCase')
 INSERT tmp_PeopleCase
-SELECT c.ENP, cc.id,c.Account,c.DateRegister, c.CodeM, cc.idRecordCase AS NumberCase, d.DS1,cc.DateBegin,cc.DateEnd,dd.DS_ONK,cc.rf_idV006 AS USL_OK, cc.rf_idv008,cc.rf_idV009
+SELECT c.ENP, cc.id,c.Account,c.DateRegister, c.CodeM, cc.idRecordCase AS NumberCase, d.DS1,d.DS2,cc.DateBegin,cc.DateEnd,dd.DS_ONK,cc.rf_idV006 AS USL_OK, cc.rf_idv008,cc.rf_idV009
 		,CASE WHEN cc.rf_idV006=3 THEN pv.rf_idV025 ELSE NULL END AS P_CEL, pv.DN
 from #tCases c INNER JOIN dbo.t_Case cc ON
 		c.rf_idCase=cc.id

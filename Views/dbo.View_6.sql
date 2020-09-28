@@ -20,7 +20,7 @@ Begin DesignProperties =
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
          NumPanes = 4
-         Configuration = "(H (1[44] 4[17] 2[20] 3) )"
+         Configuration = "(H (1[38] 4[24] 2[20] 3) )"
       End
       Begin PaneConfiguration = 1
          NumPanes = 3
@@ -88,20 +88,20 @@ Begin DesignProperties =
       Begin Tables = 
          Begin Table = "t_RecordCasePatient"
             Begin Extent = 
-               Top = 0
-               Left = 511
-               Bottom = 285
-               Right = 717
+               Top = 2
+               Left = 471
+               Bottom = 287
+               Right = 677
             End
             DisplayFlags = 280
             TopColumn = 0
          End
          Begin Table = "t_Case"
             Begin Extent = 
-               Top = 9
-               Left = 770
-               Bottom = 305
-               Right = 983
+               Top = 0
+               Left = 734
+               Bottom = 296
+               Right = 947
             End
             DisplayFlags = 280
             TopColumn = 0
@@ -109,9 +109,9 @@ Begin DesignProperties =
          Begin Table = "t_RegistersAccounts"
             Begin Extent = 
                Top = 0
-               Left = 255
+               Left = 223
                Bottom = 243
-               Right = 471
+               Right = 439
             End
             DisplayFlags = 280
             TopColumn = 0

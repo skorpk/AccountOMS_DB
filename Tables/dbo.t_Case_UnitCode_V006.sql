@@ -13,3 +13,5 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_IdCase] ON [dbo].[t_Case_UnitCode_V006] ([r
 GO
 CREATE NONCLUSTERED INDEX [<Name of Missing Index, sysname,>] ON [dbo].[t_Case_UnitCode_V006] ([UnitCode]) INCLUDE ([rf_idCase]) ON [AccountMU]
 GO
+CREATE NONCLUSTERED INDEX [IX_UnitCode] ON [dbo].[t_Case_UnitCode_V006] ([UnitCode]) INCLUDE ([Qunatity], [rf_idCase]) ON [AccountMU]
+GO

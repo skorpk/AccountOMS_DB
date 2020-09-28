@@ -15,3 +15,5 @@ CREATE TABLE [dbo].[t_AdditionalAccounts202003]
 [rf_idV006] [int] NULL
 ) ON [PRIMARY]
 GO
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_CodeM_CodeSMO_ReportPeriod_V006_Payment] ON [dbo].[t_AdditionalAccounts202003] ([CodeM], [CodeSMO], [ReportYear], [ReportMonth], [rf_idV006], [AmountPayment]) WITH (IGNORE_DUP_KEY=ON) ON [PRIMARY]
+GO

@@ -5,3 +5,5 @@ CREATE TABLE [dbo].[t_CasesOnkologia2018]
 [ReportYear] [smallint] NULL
 ) ON [PRIMARY]
 GO
+CREATE NONCLUSTERED INDEX [IX_ENP_Year] ON [dbo].[t_CasesOnkologia2018] ([ENP]) INCLUDE ([ReportYear]) ON [PRIMARY]
+GO

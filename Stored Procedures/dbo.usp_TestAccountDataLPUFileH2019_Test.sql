@@ -1023,7 +1023,55 @@ end
 				left JOIN #KSG_KPG k ON
 			t1.SL_ID =k.SL_ID
 			WHERE COALESCE(t1.Code_Mes1,k.N_KSG,'0')=isnull(t.MES,'0') AND ISNULL(t.IT_SL,9)=ISNULL(k.IT_SL,9)
-			
+		
+		select t1.*
+	from #case t right join #t5 t1 on
+			ID_PAC=upper(t.ID_Patient) 
+			and t1.ID_C=t.GUID_Case
+			and USL_OK=t.rf_idV006 
+			and VIDPOM=t.rf_idV008
+			AND ISNULL(FOR_POM,0)=ISNULL(t.rf_idV014,0)			
+			AND ISNULL(VID_HMP,'bla-bla')=ISNULL(t.rf_idV018,'bla-bla')			
+			AND ISNULL(METOD_HMP,0)=ISNULL(t.rf_idV019,0)			
+			and isnull(NPR_MO,0)=isnull(t.rf_idDirectMO,0)
+			and isnull(EXTR,0)=isnull(t.HopitalisationType,0)
+			and LPU=t.rf_idMO
+			and PROFIL=t.rf_idV002
+			and DET =t.IsChildTariff
+			and NHISTORY =NumberHistoryCase
+			and DATE_1=DateBegin
+			and DATE_2=DateEnd
+			and isnull(t1.DS0,0)=isnull(t.DS0,0)
+			and t1.DS1=t.DS1						
+			and RSLT=t.rf_idV009  
+			and ISHOD=t.rf_idV012  
+			and PRVS=t.rf_idV004  
+			and isnull(OS_SLUCH,0)=isnull(t.IsSpecialCase,0)
+			and IDSP=t.rf_idV010  
+			and isnull(ED_COL,0)=ISNULL(t.Quantity,0) 
+			and isnull(TARIF ,0)=ISNULL(t.Tariff,0) 
+			and ISNULL(t.[Emergency],0)=ISNULL(t1.F_SP,0)
+			AND ISNULL(t.Comments,'bla-bla')=ISNULL(t1.COMENTSL,'bla-bla')
+			--AND ISNULL(t.IT_SL,9)=ISNULL(t1.IT_SL,9)
+			AND ISNULL(t.P_PER,9)=ISNULL(t1.P_PER,9)
+			AND ISNULL(t.IDDOCT,0) =t1.IDDOCT
+			AND ISNULL(t.rf_idSubMO,'bla-bla')=ISNULL(t1.LPU_1,'bla-bla')
+			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t1.PODR,0)
+			AND ISNULL(t.MSE,0)=ISNULL(t1.MSE,0)
+			AND ISNULL(t.C_ZAB,0)=ISNULL(t1.C_ZAB,0)
+			AND ISNULL(t.DS_ONK,0)=ISNULL(t1.DS_ONK,0)			
+			AND t.AmountPayment=t1.SUM_M
+			AND t1.SL_ID=t.SL_ID
+			AND ISNULL(t.VB_P,10)=ISNULL(t1.VB_P,10)
+			AND t.DATE_Z_1=t1.DATE_Z_1
+			AND t.DATE_Z_2=t1.DATE_Z_2
+			AND ISNULL(t.KD_Z,1000)=ISNULL(t1.KD_Z,1000)
+			AND t.SUMV=t1.SUMV
+			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
+	WHERE t.GUID_Case IS null				
+
+	SELECT * FROM #case WHERE ID_Patient='36320'
+
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))
 			BEGIN 			
@@ -1561,7 +1609,7 @@ begin
 				rp.id=ra.rf_idRegisterPatient
 									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
 				rp.id=doc.rf_idRegisterPatient
-	WHERE r1.ID_Patient='8CD79D5D-E0DC-0C40-E053-CD9115AC69D3'
+	WHERE r1.ID_Patient='5DBEA07E-3DAF-2986-D9B3-124801B5CDD5'
 ---------------------------------------------------------------------------------------------------------------------
 	select @persA=COUNT(*) from #t8
 

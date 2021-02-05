@@ -77,7 +77,7 @@ IF ( @p_AccountCode IS NOT NULL )
 	LEFT JOIN dbo.t_RegisterPatientDocument AS rpd ON rpd.rf_idRegisterPatient = rp.id
 	LEFT JOIN [dbo].[vw_sprMedicalSpeciality] v4 on c.rf_idV004=v4.id AND c.DateEnd>=v4.DateBeg AND c.DateEnd<v4.DateEnd
 	left join dbo.t_MES mes on mes.rf_idCase=c.id
-	LEFT JOIN oms_nsi.dbo.vw_sprMUAandCSG mu on mu.[code]=mes.[MES] and c.DateEnd between mu.[dateBeg] and mu.[dateEnd]
+	LEFT JOIN oms_nsi.dbo.vw_sprMUandCSG mu on mu.[code]=mes.[MES] and c.DateEnd between mu.[dateBeg] and mu.[dateEnd]
 	/*LEFT JOIN dbo.vw_sprMUAll mu on mu.[MU]=mes.[MES]*/ 	
 	left join [dbo].[t_DirectionDate] dd on dd.rf_idCase=c.id
 	left join [dbo].[t_ProfileOfBed] pb on pb.[rf_idCase]=c.id

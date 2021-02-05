@@ -35,8 +35,6 @@ ALTER TABLE [dbo].[t_RegistersAccounts] NOCHECK CONSTRAINT [CheckYear]
 GO
 ALTER TABLE [dbo].[t_RegistersAccounts] ADD CONSTRAINT [PK_RegistersAccounts_idFiles_idRegisterCases] PRIMARY KEY CLUSTERED  ([id]) ON [PRIMARY]
 GO
-CREATE NONCLUSTERED INDEX [IX_Account_idRecord] ON [dbo].[t_RegistersAccounts] ([idRecord]) INCLUDE ([rf_idFiles]) ON [PRIMARY]
-GO
 CREATE NONCLUSTERED INDEX [ra_idx] ON [dbo].[t_RegistersAccounts] ([PrefixNumberRegister]) INCLUDE ([AmountPayment], [DateRegister], [id], [Letter], [NumberRegister], [PropertyNumberRegister], [ReportMonth], [ReportYear], [rf_idFiles], [rf_idSMO]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_ReportYear_Account_ExchangeFinancing] ON [dbo].[t_RegistersAccounts] ([ReportYear], [Account]) INCLUDE ([DateRegister], [id], [Letter], [NumberRegister], [PrefixNumberRegister], [PropertyNumberRegister], [ReportMonth], [rf_idFiles], [rf_idSMO]) ON [PRIMARY]
@@ -44,8 +42,6 @@ GO
 CREATE NONCLUSTERED INDEX [IX_ReportYear_Number] ON [dbo].[t_RegistersAccounts] ([ReportYear], [NumberRegister]) INCLUDE ([rf_idFiles]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_ReportPeriod_IdFiles] ON [dbo].[t_RegistersAccounts] ([ReportYear], [ReportMonth]) INCLUDE ([Account], [AmountPayment], [DateRegister], [PrefixNumberRegister], [rf_idFiles], [rf_idSMO]) ON [PRIMARY]
-GO
-CREATE NONCLUSTERED INDEX [IX_ReportYear_Letter_idFile] ON [dbo].[t_RegistersAccounts] ([ReportYear], [rf_idSMO], [Letter]) INCLUDE ([rf_idFiles]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IDX_RA_rfidfiles] ON [dbo].[t_RegistersAccounts] ([rf_idFiles]) INCLUDE ([AmountPayment], [DateRegister], [id], [Letter], [NumberRegister], [PrefixNumberRegister], [PropertyNumberRegister], [ReportMonth], [ReportYear], [rf_idSMO]) ON [PRIMARY]
 GO

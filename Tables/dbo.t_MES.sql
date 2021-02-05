@@ -72,11 +72,13 @@ CREATE NONCLUSTERED INDEX [vkTest20180905] ON [dbo].[t_MES] ([MES]) INCLUDE ([rf
 GO
 CREATE UNIQUE NONCLUSTERED INDEX [QU_MES_Case] ON [dbo].[t_MES] ([rf_idCase]) WITH (IGNORE_DUP_KEY=ON) ON [AccountOMSCase]
 GO
-CREATE NONCLUSTERED INDEX [IX_MES_CASE] ON [dbo].[t_MES] ([rf_idCase]) INCLUDE ([MES], [Quantity], [Tariff]) ON [AccountOMSCase]
+CREATE NONCLUSTERED INDEX [IX_MES_CASE] ON [dbo].[t_MES] ([rf_idCase]) INCLUDE ([MES], [Quantity], [Tariff], [TypeMES]) ON [AccountOMSCase]
 GO
 ALTER TABLE [dbo].[t_MES] ADD CONSTRAINT [FK_MES_Cases] FOREIGN KEY ([rf_idCase]) REFERENCES [dbo].[t_Case] ([id]) ON DELETE CASCADE
 GO
-GRANT SELECT ON  [dbo].[t_MES] TO [db_AccountOMS]
 GRANT INSERT ON  [dbo].[t_MES] TO [db_AccountOMS]
+GO
+GRANT SELECT ON  [dbo].[t_MES] TO [db_AccountOMS]
+GO
 GRANT SELECT ON  [dbo].[t_MES] TO [PDAOR_Executive]
 GO

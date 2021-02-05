@@ -6,6 +6,7 @@ CREATE TABLE [dbo].[tmp_DN_I]
 [rf_idCase] [bigint] NOT NULL,
 [DateRegistration] [datetime] NOT NULL,
 [rf_D02Person] [int] NULL,
-[ReportMonth] [tinyint] NOT NULL
+[ReportMonth] [tinyint] NOT NULL,
+[ReportYear] [smallint] NOT NULL
 ) ON [PRIMARY]
 GO

@@ -1,5 +1,7 @@
 CREATE ROLE [db_AccountsFinancing]
 AUTHORIZATION [dbo]
+EXEC sp_addrolemember N'db_AccountsFinancing', N'vtfoms\imednikov'
+
 GO
 EXEC sp_addrolemember N'db_AccountsFinancing', N'secret\ngonzhal'
 GO

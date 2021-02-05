@@ -728,6 +728,10 @@ begin
 	if(select SUM(t.SUM_M) from #t5 t)!=(select t.SUMMAV from @t2 t)
 	begin
 		insert @et values(51,8)
+
+		--select SUM(t.SUM_M) from #t5 t
+		SELECT t.IDCASE,t.SUM_M FROM #t5 t ORDER BY t.IDCASE
+		select t.SUMMAV from @t2 t
 	end
 end
 --N_ZAP
@@ -1070,7 +1074,7 @@ end
 			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
 	WHERE t.GUID_Case IS null				
 
-	SELECT * FROM #case WHERE ID_Patient='36320'
+	SELECT * FROM #case WHERE ID_Patient='FBF4470F-5AD0-CDD3-3B6D-DA34E1DEF607'
 
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))

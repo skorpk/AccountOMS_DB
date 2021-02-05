@@ -26,6 +26,8 @@ CREATE TABLE [dbo].[t_Meduslugi]
 [IsNeedUsl] [tinyint] NULL
 ) ON [PRIMARY]
 GO
+CREATE NONCLUSTERED INDEX [IX_Meduslugi_Date_Surgery] ON [dbo].[t_Meduslugi] ([DateHelpEnd]) INCLUDE ([id], [MUSurgery], [rf_idCase]) WHERE ([DateHelpEnd]>'20190101') ON [PRIMARY]
+GO
 CREATE NONCLUSTERED INDEX [IX_MU_Case] ON [dbo].[t_Meduslugi] ([MU]) INCLUDE ([rf_idCase]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_MU_IdCase] ON [dbo].[t_Meduslugi] ([MUGroupCode], [MUUnGroupCode]) INCLUDE ([rf_idCase]) ON [AccountMU]

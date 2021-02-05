@@ -1,4 +1,8 @@
 
+EXEC sp_addrolemember N'db_owner', N'vtfoms\nbulycheva'
+
+EXEC sp_addrolemember N'db_owner', N'vtfoms\ZHLitus'
+
 EXEC sp_addrolemember N'db_owner', N'VTFOMS\LLekomcev'
 EXEC sp_addrolemember N'db_owner', N'VTFOMS\AStepanova'
 GO

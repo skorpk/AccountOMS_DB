@@ -10,7 +10,7 @@ CREATE TABLE [dbo].[t_RegisterPatient]
 [BirthDay] [date] NULL,
 [BirthPlace] [nvarchar] (100) COLLATE Cyrillic_General_CI_AS NULL,
 [rf_idRecordCase] [int] NULL,
-[Sex] AS (case when [rf_idV005]=(1) then 'М' else 'Ж' end),
+[Sex] AS (case  when [rf_idV005]=(1) then 'М' else 'Ж' end),
 [TEL] [varchar] (10) COLLATE Cyrillic_General_CI_AS NULL
 ) ON [AccountOMSInsurer]
 GO
@@ -22,10 +22,15 @@ CREATE NONCLUSTERED INDEX [IX_People_idFiles] ON [dbo].[t_RegisterPatient] ([rf_
 GO
 CREATE NONCLUSTERED INDEX [IX_RegisterPatient_rf_idRecordCase] ON [dbo].[t_RegisterPatient] ([rf_idRecordCase], [TEL]) INCLUDE ([BirthDay], [BirthPlace], [Fam], [Im], [Ot], [rf_idFiles], [rf_idV005]) ON [AccountOMSInsurer]
 GO
+CREATE NONCLUSTERED INDEX [<Name of Missing Index, sysname,>] ON [dbo].[t_RegisterPatient] ([Sex]) INCLUDE ([BirthDay], [rf_idRecordCase]) ON [AccountOMSInsurer]
+GO
 ALTER TABLE [dbo].[t_RegisterPatient] ADD CONSTRAINT [FK_RegisterPatient_Files] FOREIGN KEY ([rf_idFiles]) REFERENCES [dbo].[t_File] ([id]) ON DELETE CASCADE
 GO
 GRANT SELECT ON  [dbo].[t_RegisterPatient] TO [AccountsOMS]
-GRANT SELECT ON  [dbo].[t_RegisterPatient] TO [db_AccountOMS]
+GO
 GRANT INSERT ON  [dbo].[t_RegisterPatient] TO [db_AccountOMS]
+GO
+GRANT SELECT ON  [dbo].[t_RegisterPatient] TO [db_AccountOMS]
+GO
 GRANT SELECT ON  [dbo].[t_RegisterPatient] TO [PDAOR_Executive]
 GO

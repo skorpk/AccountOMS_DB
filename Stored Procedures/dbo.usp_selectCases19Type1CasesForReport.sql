@@ -73,7 +73,7 @@ left join [dbo].t_Kiro kiro on kiro.rf_idCase=c.id
 
 LEFT JOIN [oms_nsi].[dbo].[sprV025] v25 on v25.IDPC=pov.rf_idV025 and c.DateEnd between v25.DATEBEG and v25.DATEEND
 LEFT JOIN OMS_NSI.dbo.sprV020 AS v20 ON pob.rf_idV020 = v20.code and c.DateEnd between v20.DateBeg and v20.DateEnd
-LEFT JOIN OMS_NSI.dbo.sprV021 AS v21 ON c.rf_idV004 = v21.[SprV021Id] and c.DateEnd between v21.DateBeg and v21.DateEnd
+LEFT JOIN OMS_NSI.dbo.sprV021 AS v21 ON c.rf_idV004 = v21.IDSPEC and c.DateEnd between v21.DateBeg and v21.DateEnd
 left JOIN OMS_NSI.dbo.sprV018 v18 ON c.rf_idV018 = v18.Code and c.DateEnd between v18.DateBeg and v18.DateEnd
 left join OMS_NSI.dbo.sprV019 v19 on c.rf_idV019 = v19.Code and c.DateEnd between v19.DateBeg and v19.DateEnd
 left join [oms_nsi].[dbo].[sprV027] v27 on v27.IDCZ=c.C_ZAB and c.DateBegin between v27.DateBeg and v27.DateEnd

@@ -2,19 +2,20 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
-CREATE VIEW [dbo].[View_EKS]
+CREATE VIEW [dbo].[View_LNCSG2020]
 AS
-SELECT  rf_idCase, SUM(AmountDeduction) AS Expr2, TypeCheckup, SUM(AmountEKMP) AS Expr1, idAkt, DocumentDate, DocumentNumber, CodeM
-FROM     dbo.t_PaymentAcceptedCase2
-WHERE  (DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-02-01 00:00:00', 102))
-GROUP BY rf_idCase, TypeCheckup, idAkt, DocumentDate, DocumentNumber, CodeM
+SELECT  tCSG.code, MIN(tCSG.name) AS Expr1
+FROM     oms_nsi.dbo.tCSGroup AS tCSG INNER JOIN
+               oms_nsi.dbo.tCSGType AS t1 ON tCSG.rf_CSGTypeId = t1.CSGTypeId
+WHERE  (t1.YEAR = '2020')
+GROUP BY tCSG.code
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
          NumPanes = 4
-         Configuration = "(H (1[18] 4[44] 2[14] 3) )"
+         Configuration = "(H (1[41] 4[20] 2[12] 3) )"
       End
       Begin PaneConfiguration = 1
          NumPanes = 3
@@ -80,12 +81,22 @@ Begin DesignProperties =
          Left = 0
       End
       Begin Tables = 
-         Begin Table = "t_PaymentAcceptedCase2"
+         Begin Table = "t1"
+            Begin Extent = 
+               Top = 6
+               Left = 283
+               Bottom = 121
+               Right = 457
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "tCSG"
             Begin Extent = 
                Top = 6
                Left = 42
-               Bottom = 328
-               Right = 224
+               Bottom = 121
+               Right = 241
             End
             DisplayFlags = 280
             TopColumn = 0
@@ -97,13 +108,17 @@ Begin DesignProperties =
    Begin DataPane = 
       Begin ParameterDefaults = ""
       End
-      Begin ColumnWidths = 9
+      Begin ColumnWidths = 13
          Width = 284
          Width = 1358
          Width = 1358
          Width = 1358
-         Width = 2146
-         Width = 2201
+         Width = 1358
+         Width = 1358
+         Width = 1358
+         Width = 1358
+         Width = 1358
+         Width = 1358
          Width = 1358
          Width = 1358
          Width = 1358
@@ -111,7 +126,7 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 12
-         Column = 1440
+         Column = 6725
          Alias = 897
          Table = 1168
          Output = 720
@@ -119,17 +134,17 @@ Begin DesignProperties =
          NewValue = 1170
          SortType = 1345
          SortOrder = 1413
-         GroupBy = 1350
-         Filter = 6235
+         GroupBy = 4850
+         Filter = 1345
          Or = 1350
          Or = 1350
          Or = 1350
       End
    End
 End
-', 'SCHEMA', N'dbo', 'VIEW', N'View_EKS', NULL, NULL
+', 'SCHEMA', N'dbo', 'VIEW', N'View_LNCSG2020', NULL, NULL
 GO
 DECLARE @xp int
 SELECT @xp=1
-EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'dbo', 'VIEW', N'View_EKS', NULL, NULL
+EXEC sp_addextendedproperty N'MS_DiagramPaneCount', @xp, 'SCHEMA', N'dbo', 'VIEW', N'View_LNCSG2020', NULL, NULL
 GO

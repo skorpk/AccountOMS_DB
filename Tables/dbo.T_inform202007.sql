@@ -7,3 +7,5 @@ CREATE TABLE [dbo].[T_inform202007]
 [Age] [smallint] NULL
 ) ON [PRIMARY]
 GO
+CREATE NONCLUSTERED INDEX [IX_Inform] ON [dbo].[T_inform202007] ([flag], [Sex]) INCLUDE ([Age], [ENP]) ON [PRIMARY]
+GO

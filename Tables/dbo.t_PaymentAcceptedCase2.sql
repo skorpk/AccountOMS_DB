@@ -15,8 +15,6 @@ CREATE TABLE [dbo].[t_PaymentAcceptedCase2]
 [AmountDeduction] AS (([AmountMEK]+[AmountMEE])+[AmountEKMP])
 ) ON [PRIMARY]
 GO
-CREATE NONCLUSTERED INDEX [IX_Case_Deduction] ON [dbo].[t_PaymentAcceptedCase2] ([AmountDeduction]) INCLUDE ([rf_idCase]) ON [PRIMARY]
-GO
 CREATE NONCLUSTERED INDEX [IX_WCF] ON [dbo].[t_PaymentAcceptedCase2] ([DateRegistration]) INCLUDE ([AmountEKMP], [AmountMEE], [AmountMEK], [rf_idCase]) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_PaymentDateRegIDCase] ON [dbo].[t_PaymentAcceptedCase2] ([rf_idCase], [DateRegistration]) INCLUDE ([AmountDeduction], [idAkt]) ON [PRIMARY]

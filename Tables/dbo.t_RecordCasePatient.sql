@@ -16,16 +16,21 @@ CREATE TABLE [dbo].[t_RecordCasePatient]
 GO
 ALTER TABLE [dbo].[t_RecordCasePatient] ADD CONSTRAINT [PK_RecordCasePatient_idFiles_idRecordCase] PRIMARY KEY CLUSTERED  ([id]) ON [AccountOMSInsurer]
 GO
-CREATE NONCLUSTERED INDEX [IX_RecordCase_RefAccount] ON [dbo].[t_RecordCasePatient] ([rf_idRegistersAccounts]) INCLUDE ([AttachLPU], [id], [ID_Patient], [idRecord], [IsNew], [NewBorn], [rf_idF008]) ON [AccountOMSInsurer]
+CREATE NONCLUSTERED INDEX [IX_RecordCase_RefAccount] ON [dbo].[t_RecordCasePatient] ([rf_idRegistersAccounts]) INCLUDE ([AttachLPU], [BirthWeight], [id], [ID_Patient], [idRecord], [IsNew], [NewBorn], [NumberPolis], [rf_idF008], [SeriaPolis]) ON [AccountOMSInsurer]
 GO
 CREATE NONCLUSTERED INDEX [IX_RecordCasePatient_RefAccount] ON [dbo].[t_RecordCasePatient] ([rf_idRegistersAccounts]) INCLUDE ([AttachLPU], [id], [NewBorn], [NumberPolis], [SeriaPolis]) ON [AccountOMSInsurer]
 GO
 ALTER TABLE [dbo].[t_RecordCasePatient] ADD CONSTRAINT [FK_RecordCasePatient_RegistersAccounts] FOREIGN KEY ([rf_idRegistersAccounts]) REFERENCES [dbo].[t_RegistersAccounts] ([id]) ON DELETE CASCADE
 GO
 GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [AccountsOMS]
-GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [db_AccountOMS]
+GO
 GRANT INSERT ON  [dbo].[t_RecordCasePatient] TO [db_AccountOMS]
+GO
+GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [db_AccountOMS]
+GO
 GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [db_AccountsFinancing]
+GO
 GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [db_Financing]
+GO
 GRANT SELECT ON  [dbo].[t_RecordCasePatient] TO [PDAOR_Executive]
 GO

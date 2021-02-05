@@ -1,5 +1,7 @@
 CREATE ROLE [AccountsOMS]
 AUTHORIZATION [VTFOMS\VZarya]
+EXEC sp_addrolemember N'AccountsOMS', N'vtfoms\imednikov'
+
 EXEC sp_addrolemember N'AccountsOMS', N'VTFOMS\omishina'
 
 EXEC sp_addrolemember N'AccountsOMS', N'vtfoms\nzhideleva'

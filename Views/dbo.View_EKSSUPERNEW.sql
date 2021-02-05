@@ -4,9 +4,9 @@ SET ANSI_NULLS ON
 GO
 CREATE VIEW [dbo].[View_EKSSUPERNEW]
 AS
-SELECT  Ид, SUM(Eks) AS Eks
+SELECT  SUM(Eks) AS Eks, rf_idComletedCaseC
 FROM     dbo.View_EKSNEW
-GROUP BY Ид
+GROUP BY rf_idComletedCaseC
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
 Begin DesignProperties = 
@@ -83,7 +83,7 @@ Begin DesignProperties =
             Begin Extent = 
                Top = 6
                Left = 42
-               Bottom = 105
+               Bottom = 211
                Right = 216
             End
             DisplayFlags = 280

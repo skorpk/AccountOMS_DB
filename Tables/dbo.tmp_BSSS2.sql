@@ -8,6 +8,7 @@ CREATE TABLE [dbo].[tmp_BSSS2]
 [rf_D02Person] [int] NULL,
 [ReportMonth] [tinyint] NOT NULL,
 [IsListOfDN] [int] NOT NULL,
-[MainDS] [varchar] (6) COLLATE Cyrillic_General_CI_AS NULL
+[MainDS] [varchar] (6) COLLATE Cyrillic_General_CI_AS NULL,
+[ReportYear] [smallint] NOT NULL
 ) ON [PRIMARY]
 GO

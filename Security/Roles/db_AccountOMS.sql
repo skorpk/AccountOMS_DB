@@ -1,5 +1,11 @@
 CREATE ROLE [db_AccountOMS]
 AUTHORIZATION [dbo]
+EXEC sp_addrolemember N'db_AccountOMS', N'vtfoms\imednikov'
+
+EXEC sp_addrolemember N'db_AccountOMS', N'vtfoms\nbulycheva'
+
+EXEC sp_addrolemember N'db_AccountOMS', N'vtfoms\tgaponenko'
+
 EXEC sp_addrolemember N'db_AccountOMS', N'VTFOMS\omishina'
 
 EXEC sp_addrolemember N'db_AccountOMS', N'vtfoms\nzhideleva'

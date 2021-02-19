@@ -827,7 +827,81 @@ begin
 					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
 					AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
 					AND r.IsNew=t.PR_NOV					
-	if(@zapRC-@zapA)<>0	
+	SELECT t.*
+	from (
+			select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
+					,p.NumberPolis
+					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
+					,p.OKATO
+					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
+					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
+					,r1.BirthWeight,p.ENP,r1.IsNew
+			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+							f.id=a.rf_idFilesBack
+							and f.CodeM=@codeMO
+							and a.NumberRegister=@number
+							and a.PropertyNumberRegister=@property
+							AND a.ReportYear=@year
+							AND a.ReportMonth=@month
+												inner join RegisterCases.dbo.t_RecordCaseBack r on
+							a.id=r.rf_idRegisterCaseBack
+												INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+							r.id=cp.rf_idRecordCaseBack					
+							and cp.TypePay=1
+												inner join RegisterCases.dbo.t_RecordCase r1 on
+							r.rf_idRecordCase=r1.id
+												inner join RegisterCases.dbo.t_PatientBack p on
+							r.id=p.rf_idRecordCaseBack
+							--and p.rf_idSMO=@smo
+												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
+							r.rf_idCase=att.rf_idCase
+			
+		  ) r right join #t3 t on
+					r.ID_Patient=t.ID_PAC
+					and r.rf_idF008=t.VPOLIS
+					and r.SeriaPolis=COALESCE(t.SPOLIS,'')
+					and r.NumberPolis=t.NPOLIS
+					and r.rf_idSMO=t.SMO
+					and r.OKATO=COALESCE(t.SMO_OK,'18000')
+					and r.NewBorn=t.NOVOR
+					and isnull(r.MO_PR,'000000')=t.MO_PR
+					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
+					--AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
+					AND r.IsNew=t.PR_NOV	
+	WHERE r.ID_Patient IS null						
+	/*
+	select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
+					,p.NumberPolis
+					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
+					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
+					,p.OKATO
+					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
+					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
+					,r1.BirthWeight,p.ENP,r1.IsNew
+			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
+							f.id=a.rf_idFilesBack
+							and f.CodeM=@codeMO
+							and a.NumberRegister=@number
+							and a.PropertyNumberRegister=@property
+							AND a.ReportYear=@year
+							AND a.ReportMonth=@month
+												inner join RegisterCases.dbo.t_RecordCaseBack r on
+							a.id=r.rf_idRegisterCaseBack
+												INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
+							r.id=cp.rf_idRecordCaseBack					
+							and cp.TypePay=1
+												inner join RegisterCases.dbo.t_RecordCase r1 on
+							r.rf_idRecordCase=r1.id
+												inner join RegisterCases.dbo.t_PatientBack p on
+							r.id=p.rf_idRecordCaseBack
+							--and p.rf_idSMO=@smo
+												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
+							r.rf_idCase=att.rf_idCase
+			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('8965c83c-49b9-11eb-80c6-509a4c8378d8','568381aa-5721-11eb-80c6-509a4c8378d8','8f814143-2cae-11e6-8143-001dd8b71c09')
+	*/
+
+	IF(@zapRC-@zapA)<>0	
 	begin
 		insert @et values(588,13)
 	end	
@@ -1074,7 +1148,7 @@ end
 			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
 	WHERE t.GUID_Case IS null				
 
-	SELECT * FROM #case WHERE ID_Patient='FBF4470F-5AD0-CDD3-3B6D-DA34E1DEF607'
+	
 
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))
@@ -1153,7 +1227,7 @@ end
 			IF EXISTS(SELECT * FROM #t5 t WHERE (t.P_CEL IS NOT NULL OR t.DN IS NOT NULL) AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k 
 																										  WHERE k.GUID_Case=t.ID_C AND ISNULL(k.P_CEL,'bla')=ISNULL(t.P_CEL,'bla')  
 																												AND ISNULL(k.DN,0)=ISNULL(t.DN,0) )	)
-			BEGIN 			
+			BEGIN 						
 				insert @et values(588,102)
 			END     
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.DN IS NOT NULL AND  NOT EXISTS(SELECT * FROM #tPurposeOfVisit k WHERE k.GUID_Case=t.ID_C AND k.DN=t.DN))
@@ -1574,7 +1648,7 @@ begin
 			and isnull(t.FAM_P,'')=isnull(t1.FAM_P,'')
 			and isnull(t.IM_P,'')=isnull(t1.IM_p,'')
 			and isnull(t.OT_P,'') =isnull(t1.OT_P,'') 
-			--and isnull(t.W_P,'') =isnull(t1.W_P,'') 
+			and isnull(t.W_P,'') =isnull(t1.W_P,'') 
 			and isnull(t.DR_P,'') =isnull(t1.DR_P,'') 
 			and isnull(t.MR,'') =isnull(t1.MR,'') 
 			and isnull(t.DOCTYPE,'')=isnull(t1.DOCTYPE,'')
@@ -1588,32 +1662,7 @@ begin
 			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
 		WHERE t.ID_Patient IS NULL
 
-		select distinct r1.ID_Patient,rp.Fam,rp.Im,rp.Ot,rp.rf_idV005 as W,rp.BirthDay as DR,ra.Fam as Fam_P, ra.Im as IM_P, ra.Ot as Ot_P,ra.rf_idV005 as W_P,
-				  ra.BirthDay as DR_P, rp.BirthPlace as MR, doc.rf_idDocumentType as DOCTYPE, doc.SeriaDocument as DOCSER, doc.NumberDocument as DOCNUM, 
-				  doc.SNILS, doc.OKATO as OKATOG, doc.OKATO_Place as OKATOP, rp.TEL, doc.DOCDATE,doc.DOCORG
-			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
-				f.id=a.rf_idFilesBack
-				and f.rf_idFiles=@idF			
-									inner join RegisterCases.dbo.t_RecordCaseBack r on
-				a.id=r.rf_idRegisterCaseBack
-									INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
-				r.id=cp.rf_idRecordCaseBack					
-				and cp.TypePay=1
-									inner join RegisterCases.dbo.t_RecordCase r1 on
-				r.rf_idRecordCase=r1.id
-									inner join RegisterCases.dbo.t_PatientBack p on
-				r.id=p.rf_idRecordCaseBack
-				and p.rf_idSMO=@smo
-									inner join RegisterCases.dbo.t_RefRegisterPatientRecordCase rf on				
-				r1.id=rf.rf_idRecordCase
-									inner join RegisterCases.dbo.t_RegisterPatient rp on
-				rf.rf_idRegisterPatient=rp.id
-				and rp.rf_idFiles=@idF
-									left join RegisterCases.dbo.t_RegisterPatientAttendant ra on
-				rp.id=ra.rf_idRegisterPatient
-									left join RegisterCases.dbo.t_RegisterPatientDocument doc on
-				rp.id=doc.rf_idRegisterPatient
-	WHERE r1.ID_Patient='5DBEA07E-3DAF-2986-D9B3-124801B5CDD5'
+		
 ---------------------------------------------------------------------------------------------------------------------
 	select @persA=COUNT(*) from #t8
 
@@ -1651,6 +1700,7 @@ begin
 				) t INNER JOIN #tDost d ON
 				t.ID_Patient=d.ID_PAC
 				AND t.TypeReliability=d.DOST
+			
 
 				SELECT @ddA=COUNT(*) FROM #tDost
          IF(@ddA<>@ddRC)       

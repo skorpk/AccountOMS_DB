@@ -60,7 +60,7 @@ SELECT
 							  )
 					-------------------------------------------------------------/*KSG_KPG*/  ---------------------------------
 								,(
-									SELECT  N_KSG ,VER_KSG ,KSG_PG ,KOEF_Z ,KOEF_UP ,BZTSZ ,KOEF_D ,KOEF_U 
+									SELECT  N_KSG ,@reportYear VER_KSG ,KSG_PG ,KOEF_Z ,KOEF_UP ,BZTSZ ,KOEF_D ,KOEF_U 
 									,(SELECT CRIT FROM dbo.vw_CRIT260_ONK WHERE rf_idCase=kk.rf_idCase FOR XML PATH(''),TYPE )
 									,SL_K ,IT_SL,
 									(

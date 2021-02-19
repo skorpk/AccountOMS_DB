@@ -4,15 +4,15 @@ SET ANSI_NULLS ON
 GO
 CREATE PROCEDURE [dbo].[usp_260GetVMP]
 as
-DECLARE @dateStart DATETIME='20200101',	--всегда с начало года
+DECLARE @dateStart DATETIME='20210101',	--всегда с начало года
 		@dateEnd DATETIME=GETDATE(),
-		@reportYear SMALLINT=2020,
+		@reportYear SMALLINT=2021,
 		@reportMonth TINYINT,--отчетный месяц ставим сами т.к. случаи отбираем с начало года
 		@fileName VARCHAR(26)='TT34_'
 
 SELECT @reportMonth=(ISNULL(MAX([MONTH]),0)+1) FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND IsUnload=1
 
-SELECT DiagnosisCode INTO #tD FROM dbo.vw_sprMKB10 WHERE MainDS LIKE 'D0_' OR MainDS LIKE 'C__'
+SELECT DiagnosisCode INTO #tD FROM dbo.vw_sprMKB10 WHERE MainDS LIKE 'D0_' OR MainDS LIKE 'C__' OR MainDS LIKE 'D4[5-7]'
 
 DELETE FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND [MONTH]=@reportMonth AND IsUnload IS NULL
 
@@ -122,7 +122,7 @@ FROM RegisterCases.dbo.t_RecordCase r INNER JOIN RegisterCases.dbo.t_Case c ON
 			AND z.OKATO=m.TF_OKATO
 						INNER JOIN dbo.t_260order_VMP v ON
 			r.ID_Patient=v.ID_PAC 
-WHERE c.DateEnd>='20200101' AND v.rf_idSMO='34' AND v.CodeSMO34 IS NULL
+WHERE c.DateEnd>='20210101' AND v.rf_idSMO='34' AND v.CodeSMO34 IS NULL
 
 DROP TABLE #tD
 DROP TABLE #tCases

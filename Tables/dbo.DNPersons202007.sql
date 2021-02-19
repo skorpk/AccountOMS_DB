@@ -8,7 +8,8 @@ CREATE TABLE [dbo].[DNPersons202007]
 [Age] [int] NULL,
 [sex_ENP] [int] NULL,
 [Sex] AS (case  when [sex_ENP]=(1) then 'М' else 'Ж' end),
-[flag] [tinyint] NULL
+[flag] [tinyint] NULL,
+[ReportYear] [smallint] NOT NULL CONSTRAINT [DF__DNPersons__Repor__413112BB] DEFAULT ((2021))
 ) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_ENP] ON [dbo].[DNPersons202007] ([ENP]) INCLUDE ([Age], [sex_ENP]) ON [PRIMARY]

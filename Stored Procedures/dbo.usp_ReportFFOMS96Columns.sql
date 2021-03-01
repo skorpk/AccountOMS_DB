@@ -91,7 +91,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			d.DiagnosisCode=dd.DiagnosisCode     										     
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient																	   					  					      
-WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006<4 AND f.TypeFile='H'
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear BETWEEN 2019 AND @reportYear-1 AND c.DateEnd<'20210101' AND c.rf_idV006<4 AND f.TypeFile='H'
 
 CREATE UNIQUE NONCLUSTERED INDEX QU_Temp2019 ON #tCases2019(rf_idRecordCasePatient,rf_idCase) WITH IGNORE_DUP_KEY
 INSERT #tCases2019
@@ -109,7 +109,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			d.DiagnosisCode=dd.DiagnosisCode     										     
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient	
-WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006=3 AND f.TypeFile='F'
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear BETWEEN 2019 AND @reportYear-1 AND c.DateEnd<'20210101' AND c.rf_idV006=3 AND f.TypeFile='F'
 
 INSERT #tCases2019
 SELECT DISTINCT c.id AS rf_idCase,r.id AS rf_idRecordCasePatient, c.AmountPayment,ps.ENP, c.AmountPayment AS AmountPay, f.TypeFile
@@ -126,7 +126,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 			d.DiagnosisCode=dd.DiagnosisCode     										     
 					INNER JOIN dbo.t_PatientSMO ps ON
 			r.id=ps.rf_idRecordCasePatient	
-WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear=2019 AND c.DateEnd<'20200101' AND c.rf_idV006=3 AND f.TypeFile='F'
+WHERE f.DateRegistration>'20190101' AND f.DateRegistration<@dateEnd AND a.ReportYear BETWEEN 2019 AND @reportYear-1 AND c.DateEnd<'20210101' AND c.rf_idV006=3 AND f.TypeFile='F'
 
 
 --=======================================================================================================================--
@@ -525,7 +525,7 @@ FROM dbo.t_File f INNER JOIN dbo.t_RegistersAccounts a ON
 					INNER JOIN dbo.t_ONK_USL u ON
 			c.id=u.rf_idCase                  
 WHERE f.DateRegistration>@dateStart AND f.DateRegistration<@dateEnd AND dd.DiagnosisCode LIKE 'C%' AND a.ReportYear=@reportYear /*AND a.ReportMonth<=@reportMonth AND c.DateEnd<@dateEndCase*/
-		AND o.DS1_T=0 AND u.rf_idN013 IN(1,2,3,4) AND c.DateBegin>='20200101' and c.rf_idV006<3
+		AND o.DS1_T=0 AND u.rf_idN013 IN(1,2,3,4) AND c.DateBegin>='20210101' and c.rf_idV006<3
 
 
 UPDATE p SET p.AmountPay=p.AmountPay-r.AmountDeduction
@@ -1189,18 +1189,21 @@ CREATE TABLE #tmpSkrybina(Col33 INT NOT NULL DEFAULT 0,Col34 INT NOT NULL DEFAUL
 						  ,Col49 INT NOT NULL DEFAULT 0,Col50 INT NOT NULL DEFAULT 0,Col51 INT NOT NULL DEFAULT 0,Col52 INT NOT NULL DEFAULT 0,Col53 INT NOT NULL DEFAULT 0,Col54 INT NOT NULL DEFAULT 0
 						  ,Col65 INT NOT NULL DEFAULT 0,Col66 INT NOT NULL DEFAULT 0,Col67 INT NOT NULL DEFAULT 0,Col68 INT NOT NULL DEFAULT 0,Col69 INT NOT NULL DEFAULT 0,Col70 INT NOT NULL DEFAULT 0
 						  ,Col81 VARCHAR(300),Col82 VARCHAR(300),Col83 VARCHAR(300),Col84 VARCHAR(300),Col85 VARCHAR(300),Col86 VARCHAR(300))
+
 ----------------------MEK--------------------------------
+--SELECT COUNT(DISTINCT rf_idCase),COUNT(DISTINCT ENP) FROM #tCases
+
 INSERT #tmpSkrybina(Col33)        
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col33
 FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 		c.rf_idCase=p.rf_idCase
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1
 
 INSERT #tmpSkrybina(Col34)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col34
 FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 		c.rf_idCase=p.rf_idCase
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1 AND c.rf_idN013=2
 ---------------------MEE----------------------------------
 INSERT #tmpSkrybina(Col35)
 SELECT COUNT(DISTINCT rf_idCase) AS Col35
@@ -1208,7 +1211,7 @@ FROM (
 	SELECT c.rf_idCase, c.AmountPay-SUM(p.AmountDeduction) AS AmountPay
 	FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 			c.rf_idCase=p.rf_idCase
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=2
 	GROUP BY c.rf_idCase,c.AmountPay
 	) t
 
@@ -1218,7 +1221,7 @@ FROM (
 	SELECT c.rf_idCase, c.AmountPay-SUM(p.AmountDeduction) AS AmountPay
 	FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 			c.rf_idCase=p.rf_idCase
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=2 AND c.rf_idN013=2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=2 AND c.rf_idN013=2
 	GROUP BY c.rf_idCase,c.AmountPay
 	) t
 ---------------------EKMP----------------------------------
@@ -1228,7 +1231,7 @@ FROM (
 	SELECT c.rf_idCase, c.AmountPay-SUM(p.AmountDeduction) AS AmountPay
 	FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 			c.rf_idCase=p.rf_idCase
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3
 	GROUP BY c.rf_idCase,c.AmountPay
 	)t
 
@@ -1238,7 +1241,7 @@ FROM (
 	SELECT c.rf_idCase, c.AmountPay-SUM(p.AmountDeduction) AS AmountPay
 	FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 			c.rf_idCase=p.rf_idCase
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3 AND c.rf_idN013=2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3 AND c.rf_idN013=2
 	GROUP BY c.rf_idCase,c.AmountPay
 	)t
 -------------------------Колонки 49-54----------------------------------
@@ -1251,7 +1254,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt              
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1  
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1  
 
 INSERT #tmpSkrybina(Col50)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col50
@@ -1260,7 +1263,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt              
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1 AND c.rf_idN013=2
 
 ---------------------MEE Дефекты----------------------------------
 INSERT #tmpSkrybina(Col51)
@@ -1270,7 +1273,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2
 
 INSERT #tmpSkrybina(Col52)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col52
@@ -1279,7 +1282,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2 AND c.rf_idN013=2
 ---------------------EKMP Дефекты----------------------------------
 INSERT #tmpSkrybina(Col53)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col53
@@ -1288,7 +1291,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3
 
 INSERT #tmpSkrybina(Col54)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col54
@@ -1297,7 +1300,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3 AND c.rf_idN013=2
 
 -------------------------Колонки 65-70----------------------------------
 
@@ -1309,7 +1312,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt              
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1  
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1  
 
 INSERT #tmpSkrybina(Col66)
 SELECT COUNT(DISTINCT r.id) AS Col66
@@ -1318,7 +1321,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt              
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1 AND c.rf_idN013=2
 ---------------------MEE Дефекты----------------------------------
 INSERT #tmpSkrybina(Col67)
 SELECT COUNT(r.id) AS Col67
@@ -1327,7 +1330,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2
 
 INSERT #tmpSkrybina(Col68)
 SELECT COUNT(DISTINCT c.rf_idCase) AS Col68
@@ -1336,7 +1339,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2 AND c.rf_idN013=2
 ---------------------EKMP Дефекты----------------------------------
 INSERT #tmpSkrybina(Col69)
 SELECT COUNT(DISTINCT r.id) AS Col69
@@ -1345,7 +1348,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3
 
 INSERT #tmpSkrybina(Col70)
 SELECT COUNT(DISTINCT r.id) AS Col70
@@ -1354,7 +1357,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 				INNER JOIN dbo.t_ReasonDenialPayment r ON
 		p.rf_idCase=r.rf_idCase
 		AND p.idAkt=r.idAkt 
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3 AND c.rf_idN013=2
 
 -------------------------Колонки 81-86----------------------------------
 
@@ -1372,7 +1375,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 		AND p.idAkt=r.idAkt              
 				INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID              
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1  
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1  
 )
 SELECT @p=@p+reason+';' FROM cte
 
@@ -1388,7 +1391,7 @@ FROM #tCases2 c INNER JOIN dbo.t_PaymentAcceptedCase2 p ON
 		AND p.idAkt=r.idAkt     
 				INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID         
-WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=1 AND c.rf_idN013=2
+WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=1 AND c.rf_idN013=2
 )
 SELECT @pHim=@pHim+reason+';' FROM cte
 
@@ -1406,7 +1409,7 @@ AS(
 			AND p.idAkt=r.idAkt 
 					INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID 
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2
 )
 SELECT @p=@p+reason+';' FROM cte
 
@@ -1423,7 +1426,7 @@ AS(
 			AND p.idAkt=r.idAkt 
 					INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID 
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup =2 AND c.rf_idN013=2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup =2 AND c.rf_idN013=2
 )
 SELECT @pHim=@pHim+reason+';' FROM cte
 
@@ -1440,7 +1443,7 @@ AS(
 			AND p.idAkt=r.idAkt 
 					INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID 
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3
 )
 SELECT @p=@p+reason+';' FROM cte
 
@@ -1457,7 +1460,7 @@ AS(
 			AND p.idAkt=r.idAkt 
 					INNER JOIN oms_nsi.dbo.sprF014 f ON
 		r.CodeReason=f.ID 
-	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEnd AND p.TypeCheckup=3 AND c.rf_idN013=2
+	WHERE p.DateRegistration>@dateStart AND p.DateRegistration<@dateEndAkt AND p.TypeCheckup=3 AND c.rf_idN013=2
 )
 SELECT @pHim=@pHim+reason+';' FROM cte
 

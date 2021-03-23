@@ -6,7 +6,7 @@ CREATE VIEW [dbo].[View_EKS]
 AS
 SELECT  rf_idCase, SUM(AmountDeduction) AS Expr2, TypeCheckup, SUM(AmountEKMP) AS Expr1, idAkt, DocumentDate, DocumentNumber, CodeM
 FROM     dbo.t_PaymentAcceptedCase2
-WHERE  (DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-02-01 00:00:00', 102))
+WHERE  (DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-01-18 00:00:00', 102))
 GROUP BY rf_idCase, TypeCheckup, idAkt, DocumentDate, DocumentNumber, CodeM
 GO
 EXEC sp_addextendedproperty N'MS_DiagramPane1', N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
@@ -120,7 +120,7 @@ Begin DesignProperties =
          SortType = 1345
          SortOrder = 1413
          GroupBy = 1350
-         Filter = 6235
+         Filter = 4850
          Or = 1350
          Or = 1350
          Or = 1350

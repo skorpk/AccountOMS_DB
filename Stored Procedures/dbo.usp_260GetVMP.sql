@@ -10,7 +10,7 @@ DECLARE @dateStart DATETIME='20210101',	--всегда с начало года
 		@reportMonth TINYINT,--отчетный месяц ставим сами т.к. случаи отбираем с начало года
 		@fileName VARCHAR(26)='TT34_'
 
-SELECT @reportMonth=(ISNULL(MAX([MONTH]),0)+1) FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND IsUnload=1
+SELECT @reportMonth=(ISNULL(MAX([MONTH]),1)+1) FROM dbo.t_260order_VMP WHERE [YEAR]=@reportYear AND IsUnload=1
 
 SELECT DiagnosisCode INTO #tD FROM dbo.vw_sprMKB10 WHERE MainDS LIKE 'D0_' OR MainDS LIKE 'C__' OR MainDS LIKE 'D4[5-7]'
 

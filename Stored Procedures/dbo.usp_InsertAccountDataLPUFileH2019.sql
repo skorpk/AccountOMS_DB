@@ -9,7 +9,7 @@ CREATE proc [dbo].[usp_InsertAccountDataLPUFileH2019]
 			@fileName varchar(26),
 			@fileKey varbinary(max)=null--файл цифровой подписи
 AS
-SET XACT_ABORT ON
+SET XACT_ABORT,NOCOUNT ON
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 DECLARE @idoc int,

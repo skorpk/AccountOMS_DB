@@ -10,8 +10,7 @@ FROM     dbo.t_CompletedCase INNER JOIN
                dbo.t_RecordCasePatient ON dbo.t_CompletedCase.rf_idRecordCasePatient = dbo.t_RecordCasePatient.id INNER JOIN
                dbo.t_Case ON dbo.t_RecordCasePatient.id = dbo.t_Case.rf_idRecordCasePatient LEFT OUTER JOIN
                dbo.t_PaymentAcceptedCase2 ON dbo.t_Case.id = dbo.t_PaymentAcceptedCase2.rf_idCase
-WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-02-01 00:00:00', 102)) AND 
-               (dbo.t_PaymentAcceptedCase2.AmountDeduction > 0)
+WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2020-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-01-19 00:00:00', 102))
 GROUP BY dbo.t_CompletedCase.id, dbo.t_PaymentAcceptedCase2.idAkt, ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) 
                + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0)
 GO
@@ -154,7 +153,7 @@ Begin DesignProperties =
    End
    Begin CriteriaPane = 
       Begin ColumnWidths = 12
-         Column = 5271
+         Column = 3029
          Alias = 1508
          Table = 3749
          Output = 720
@@ -163,7 +162,7 @@ Begin DesignProperties =
          SortType = 1345
          SortOrder = 1413
          GroupBy = 1350
-         Filter = 3722
+         Filter = 4062
          Or = 1350
          Or = 13', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
 GO

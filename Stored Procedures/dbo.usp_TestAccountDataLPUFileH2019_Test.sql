@@ -870,7 +870,7 @@ begin
 					--AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
 					AND r.IsNew=t.PR_NOV	
 	WHERE r.ID_Patient IS null						
-	/*
+	
 	select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
 					,p.NumberPolis
 					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
@@ -898,8 +898,8 @@ begin
 							--and p.rf_idSMO=@smo
 												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
 							r.rf_idCase=att.rf_idCase
-			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('8965c83c-49b9-11eb-80c6-509a4c8378d8','568381aa-5721-11eb-80c6-509a4c8378d8','8f814143-2cae-11e6-8143-001dd8b71c09')
-	*/
+			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('360ab150-612d-11eb-80c7-509a4c8378d8','2928f7e4-ae76-11df-aa5c-005056a449e9','2928f7e4-ae76-11df-aa5c-005056a449e9','2928f7e4-ae76-11df-aa5c-005056a449e9')
+	
 
 	IF(@zapRC-@zapA)<>0	
 	begin
@@ -1132,7 +1132,7 @@ end
 			AND ISNULL(t.Comments,'bla-bla')=ISNULL(t1.COMENTSL,'bla-bla')
 			--AND ISNULL(t.IT_SL,9)=ISNULL(t1.IT_SL,9)
 			AND ISNULL(t.P_PER,9)=ISNULL(t1.P_PER,9)
-			AND ISNULL(t.IDDOCT,0) =t1.IDDOCT
+			--AND ISNULL(t.IDDOCT,0) =t1.IDDOCT
 			AND ISNULL(t.rf_idSubMO,'bla-bla')=ISNULL(t1.LPU_1,'bla-bla')
 			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t1.PODR,0)
 			AND ISNULL(t.MSE,0)=ISNULL(t1.MSE,0)
@@ -1146,10 +1146,12 @@ end
 			AND ISNULL(t.KD_Z,1000)=ISNULL(t1.KD_Z,1000)
 			AND t.SUMV=t1.SUMV
 			AND ISNULL(t.KD,999)=ISNULL(t1.KD,999)
-	WHERE t.GUID_Case IS null				
-
+	WHERE t.GUID_Case IS null			
 	
+	SELECT * FROM #case WHERE GUID_Case='0D1B8789-3994-45B1-9501-D6C120B2717C'
 
+	SELECT * FROM #t5 WHERE ID_C='0D1B8789-3994-45B1-9501-D6C120B2717C'
+	
 			---------------Проверяем значение CODE_MES1 и N_KSG-------------------
 			IF EXISTS(SELECT * FROM #t5 t WHERE t.Code_MES1 IS NOT NULL AND NOT EXISTS(SELECT * FROM #MES_RC WHERE GUID_Case=t.ID_C AND t.Code_MES1=MES AND TypeMES=1))
 			BEGIN 			
@@ -1166,17 +1168,20 @@ end
 			begin
 				IF EXISTS(SELECT * FROM #tBW b WHERE NOT EXISTS(SELECT * FROM #tBirthWeight WHERE GUID_Case=b.ID_C AND VNOV_M=b.BirthWeight))
 				BEGIN 			
+					SELECT 1
 					insert @et values(588,15)
 				END
 			end
 			---сверяем КСЛП
 			IF EXISTS(SELECT * FROM #tCoeff b WHERE NOT EXISTS(SELECT * FROM #tCoeff_0 WHERE b.ID_C=GUID_Case AND CODE_SL=b.CODE_SL AND VAL_C=b.VAL_C ))
-			BEGIN 			
+			BEGIN 	
+				SELECT 2		
 				insert @et values(588,15)
 			END
 			--проверяем талоны
 			IF EXISTS(SELECT * FROM #tTalon b WHERE NOT EXISTS(SELECT * FROM #t5 WHERE VIDPOM=32 and b.GUID_Case=ID_C AND Tal_D=b.Tal_D AND Tal_P=b.Tal_P AND ISNULL(TAL_NUM,'bla-bla')=ISNULL(b.NumberOfTicket,'bla-bla') ))
-			BEGIN 			
+			BEGIN 		
+				SELECT 3	
 				insert @et values(588,15)
 			END     
 
@@ -1489,6 +1494,33 @@ declare @meduslugiRC int,
 			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t.PODR,0)
 			AND ISNULL(rf_idSubMO,'bla-bla')=ISNULL(t.LPU_1,'bla-bla')					
 	
+	SELECT t.ID_C INTO #tC
+	from #meduslugi t0 right join #t6 t on
+			ID_C=t0.GUID_Case
+			and ID_U= GUID_MU
+			and LPU=rf_idMO
+			and PROFIL=rf_idV002
+			AND ISNULL(VID_VME,'bla-bla')=ISNULL(rf_idV001,'bla-bla')
+			and DET =IsChildTariff
+			and DATE_IN =DateHelpBegin
+			and DATE_OUT =DateHelpEnd
+			and rtrim(DS) =rtrim(DiagnosisCode)
+			and rtrim(CODE_USL)=rtrim(MUCode)
+			and KOL_USL= Quantity
+			and TARIF=Price
+			and SUMV_USL =TotalPrice
+			and PRVS=rf_idV004
+			AND ISNULL(t0.Comments,'bla-bla')=ISNULL(t.COMENTU,'bla-bla')
+			--AND ISNULL(rf_idDoctor,'0')=ISNULL(t.CODE_MD,'0')
+			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t.PODR,0)
+			AND ISNULL(rf_idSubMO,'bla-bla')=ISNULL(t.LPU_1,'bla-bla')		
+	WHERE t0.GUID_MU IS NULL
+
+	SELECT * FROM #meduslugi WHERE EXISTS(SELECT 1 FROM #tC WHERE ID_C=GUID_Case)
+	SELECT * FROM #t6 t WHERE EXISTS(SELECT 1 FROM #tC tt WHERE tt.ID_C=t.ID_C)
+
+
+
 	if(isnull(@meduslugiRC,0)-isnull(@meduslugiA,0))<>0
 	begin
 		insert @et values(588,17)
@@ -1661,8 +1693,7 @@ begin
 			AND ISNULL(t.DOCDATE,'22220101')=ISNULL(t1.DOCDATE,'22220101')
 			AND ISNULL(t.DOCORG,'bla-bla')=ISNULL(t1.DOCORG,'bla-bla')
 		WHERE t.ID_Patient IS NULL
-
-		
+				
 ---------------------------------------------------------------------------------------------------------------------
 	select @persA=COUNT(*) from #t8
 

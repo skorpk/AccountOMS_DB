@@ -32,6 +32,8 @@ CREATE NONCLUSTERED INDEX [IX_MU_Case] ON [dbo].[t_Meduslugi] ([MU]) INCLUDE ([r
 GO
 CREATE NONCLUSTERED INDEX [IX_MU_IdCase] ON [dbo].[t_Meduslugi] ([MUGroupCode], [MUUnGroupCode]) INCLUDE ([rf_idCase]) ON [AccountMU]
 GO
+CREATE NONCLUSTERED INDEX [IX_MUGroupCode_MUUnGroupCode_MUCode] ON [dbo].[t_Meduslugi] ([MUGroupCode], [MUUnGroupCode], [MUCode]) INCLUDE ([rf_idCase]) ON [PRIMARY]
+GO
 CREATE NONCLUSTERED INDEX [IX_MU_RefCase_ID] ON [dbo].[t_Meduslugi] ([rf_idCase]) INCLUDE ([Comments], [DateHelpBegin], [DateHelpEnd], [DiagnosisCode], [GUID_MU], [id], [IsChildTariff], [IsNeedUsl], [MUCode], [MUGroupCode], [MUSurgery], [MUUnGroupCode], [Price], [Quantity], [rf_idDepartmentMO], [rf_idDoctor], [rf_idMO], [rf_idSubMO], [rf_idV002], [rf_idV004], [TotalPrice]) ON [AccountMU]
 GO
 CREATE UNIQUE NONCLUSTERED INDEX [QU_Case_MU] ON [dbo].[t_Meduslugi] ([rf_idCase], [GUID_MU]) WITH (IGNORE_DUP_KEY=ON) ON [AccountMU]

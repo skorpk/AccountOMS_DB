@@ -9,7 +9,7 @@ CREATE TABLE [dbo].[tmpCovidCases]
 [DateBegin] [date] NOT NULL,
 [DateEnd] [date] NOT NULL,
 [AmountPayment] [money] NULL,
-[V006] [varchar] (11) COLLATE Cyrillic_General_CI_AS NOT NULL,
+[V006] [varchar] (254) COLLATE Cyrillic_General_CI_AS NULL,
 [FIO] [nvarchar] (122) COLLATE Cyrillic_General_CI_AS NULL,
 [BirthDay] [date] NULL,
 [Sex] [varchar] (1) COLLATE Cyrillic_General_CI_AS NOT NULL,

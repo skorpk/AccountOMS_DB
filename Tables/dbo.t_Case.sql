@@ -87,6 +87,8 @@ CREATE NONCLUSTERED INDEX [IX_ReportShumeiko] ON [dbo].[t_Case] ([rf_idV006], [r
 GO
 CREATE NONCLUSTERED INDEX [IX_V009_DateEnd_Report1] ON [dbo].[t_Case] ([rf_idV009], [DateEnd]) INCLUDE ([AmountPayment], [id], [idRecordCase], [IsChildTariff], [rf_idDoctor], [rf_idRecordCasePatient], [rf_idV002], [rf_idV006]) ON [AccountOMSCase]
 GO
+CREATE NONCLUSTERED INDEX [IX_V014] ON [dbo].[t_Case] ([rf_idV014]) INCLUDE ([AmountPayment], [id], [rf_idRecordCasePatient], [rf_idV002], [rf_idV004], [rf_idV006], [rf_idV009], [TypeTranslation]) ON [AccountOMSCase]
+GO
 ALTER TABLE [dbo].[t_Case] ADD CONSTRAINT [FK_Cases_RecordCasePatient] FOREIGN KEY ([rf_idRecordCasePatient]) REFERENCES [dbo].[t_RecordCasePatient] ([id]) ON DELETE CASCADE
 GO
 GRANT SELECT ON  [dbo].[t_Case] TO [AccountsOMS]
@@ -100,6 +102,20 @@ GO
 GRANT SELECT ON  [dbo].[t_Case] TO [db_Financing]
 GO
 GRANT SELECT ON  [dbo].[t_Case] TO [PDAOR_Executive]
+GO
+SET NUMERIC_ROUNDABORT OFF
+GO
+SET ANSI_PADDING ON
+GO
+SET ANSI_WARNINGS ON
+GO
+SET CONCAT_NULL_YIELDS_NULL ON
+GO
+SET ARITHABORT ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
 GO
 SET NUMERIC_ROUNDABORT OFF
 GO

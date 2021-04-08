@@ -870,10 +870,9 @@ begin
 					--AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
 					AND r.IsNew=t.PR_NOV	
 	WHERE r.ID_Patient IS null						
-	
+	/*
 	select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
 					,p.NumberPolis
-					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
 					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
 					,p.OKATO
 					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
@@ -898,7 +897,9 @@ begin
 							--and p.rf_idSMO=@smo
 												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
 							r.rf_idCase=att.rf_idCase
-			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('360ab150-612d-11eb-80c7-509a4c8378d8','2928f7e4-ae76-11df-aa5c-005056a449e9','2928f7e4-ae76-11df-aa5c-005056a449e9','2928f7e4-ae76-11df-aa5c-005056a449e9')
+			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('1f95861f-6798-11eb-90c2-5254001b83e9','1f5cba7a-6798-11eb-90c2-5254001b83e9','1f825be2-6798-11eb-90c2-5254001b83e9')
+
+*/
 	
 
 	IF(@zapRC-@zapA)<>0	
@@ -1494,7 +1495,7 @@ declare @meduslugiRC int,
 			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t.PODR,0)
 			AND ISNULL(rf_idSubMO,'bla-bla')=ISNULL(t.LPU_1,'bla-bla')					
 	
-	SELECT t.ID_C INTO #tC
+	SELECT t.* --t.ID_C INTO #tC
 	from #meduslugi t0 right join #t6 t on
 			ID_C=t0.GUID_Case
 			and ID_U= GUID_MU
@@ -1511,13 +1512,13 @@ declare @meduslugiRC int,
 			and SUMV_USL =TotalPrice
 			and PRVS=rf_idV004
 			AND ISNULL(t0.Comments,'bla-bla')=ISNULL(t.COMENTU,'bla-bla')
-			--AND ISNULL(rf_idDoctor,'0')=ISNULL(t.CODE_MD,'0')
+			AND ISNULL(rf_idDoctor,'0')=ISNULL(t.CODE_MD,'0')
 			AND ISNULL(rf_idDepartmentMO,0)=ISNULL(t.PODR,0)
 			AND ISNULL(rf_idSubMO,'bla-bla')=ISNULL(t.LPU_1,'bla-bla')		
 	WHERE t0.GUID_MU IS NULL
 
-	SELECT * FROM #meduslugi WHERE EXISTS(SELECT 1 FROM #tC WHERE ID_C=GUID_Case)
-	SELECT * FROM #t6 t WHERE EXISTS(SELECT 1 FROM #tC tt WHERE tt.ID_C=t.ID_C)
+	SELECT * FROM #meduslugi WHERE GUID_MU='D94C5234-F757-43B9-992C-0FDD1D34EE92'
+	--SELECT * FROM #t6 t WHERE EXISTS(SELECT 1 FROM #tC tt WHERE tt.ID_C=t.ID_C)
 
 
 

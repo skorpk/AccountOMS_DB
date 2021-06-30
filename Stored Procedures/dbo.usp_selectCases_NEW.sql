@@ -1,4 +1,3 @@
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
@@ -16,13 +15,15 @@ CREATE PROCEDURE [dbo].[usp_selectCases_NEW]
     @Query NVARCHAR(max)=null
     
 AS 
+DECLARE @p_reportYear SMALLINT=2019
+
 IF ( @p_AccountCode IS NOT NULL ) 
 	BEGIN
 		CREATE TABLE #t_tmpAccs ( id INT, rf_idFiles INT )
 		INSERT  INTO #t_tmpAccs
 			SELECT ra.id,ra.rf_idFiles
             FROM dbo.t_RegistersAccounts ra
-            WHERE ra.[rf_idFiles] = @p_AccountCode
+            WHERE ra.[rf_idFiles] = @p_AccountCode AND ra.ReportYear<@p_reportYear
 
         SELECT  c.id AS CaseId,c.idRecordCase AS Случай,v6.Name AS УсловияОказания,v8.Name AS ВидПомощи,dmo.NAM_MOK AS Направление,CASE WHEN c.HopitalisationType = 1 THEN 'Плановая' ELSE 'Экстренная' END AS ТипГоспитализации,
                 v2.name AS Профиль,CASE WHEN c.IsChildTariff = 0 THEN 'Взрослый' WHEN c.IsChildTariff = 1 THEN 'Детский' ELSE 'Не указан' END AS Тариф,c.NumberHistoryCase AS НомерКарты,c.DateBegin AS Начат,
@@ -123,13 +124,14 @@ SET @Query ='insert into #t
 					,c.rf_idV002,c.rf_idV006,c.rf_idV008,c.rf_idV010,rp.rf_idV005,d.DS1,ra.[rf_idSMO],c.rf_idDirectMO,c.rf_idV009,c.rf_idV012,rp.id rpid,c.rf_idV004
 					FROM dbo.t_File f 
 					INNER JOIN #LPU AS mo ON f.CodeM = mo.CodeM	
-					INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>''34''
+					INNER JOIN dbo.t_RegistersAccounts ra ON f.id=ra.rf_idFiles AND ra.PrefixNumberRegister<>''34'' and ra.ReportYear<2019
 					INNER JOIN dbo.t_RecordCasePatient AS rcp ON ra.id=rcp.rf_idRegistersAccounts
 					INNER JOIN dbo.t_Case c ON rcp.id=c.rf_idRecordCasePatient AND c.DateEnd<'''+@p_EndDate+ '''
 					INNER JOIN dbo.t_RegisterPatient AS rp ON rp.rf_idRecordCase=rcp.id
 					INNER JOIN dbo.vw_Diagnosis AS d ON c.id = d.rf_idCase
 					left JOIN [dbo].[t_Disability] dis ON dis.[rf_idRecordCasePatient]=rcp.id													
-					WHERE  f.DateRegistration >= '''+@p_StartDate+ ''' AND f.DateRegistration <='''+ @p_EndDate+ ''' ' + @p_AdditionalFilter +' )'
+					WHERE  f.DateRegistration >= '''+@p_StartDate+ ''' AND f.DateRegistration <='''+ @p_EndDate+ ''' ' + @p_AdditionalFilter +' )' 
+			
 
 print (@Query)
 EXEC (@Query)  
@@ -144,7 +146,7 @@ INNER JOIN OMS_NSI.dbo.sprV008 AS v8 ON c.rf_idV008 = v8.Id
 INNER JOIN OMS_NSI.dbo.sprV010 AS v10 ON c.rf_idV010 = v10.Id
 INNER JOIN OMS_NSI.dbo.sprV005 AS v5 ON c.rf_idV005 = v5.Id
 INNER JOIN OMS_NSI.dbo.sprMKB AS mkb ON mkb.DiagnosisCode = c.DS1
-INNER JOIN [OMS_NSI].[dbo].[sprSMO] AS SMO ON c.[rf_idSMO] = SMO.[SMOKOD]
+inner JOIN [OMS_NSI].[dbo].[sprSMO] AS SMO ON c.[rf_idSMO] = SMO.[SMOKOD]
 INNER JOIN #LPU AS mo on c.[CodeMO]=mo.CodeM
         
 LEFT JOIN OMS_NSI.dbo.sprMO AS dmo ON dmo.mcod = c.rf_idDirectMO

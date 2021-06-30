@@ -79,11 +79,15 @@ CREATE NONCLUSTERED INDEX [IX_GUID_DateEND_2017] ON [dbo].[t_Case] ([GUID_Case],
 GO
 CREATE NONCLUSTERED INDEX [IX_Case_idRecordCasePatient] ON [dbo].[t_Case] ([rf_idRecordCasePatient], [id]) INCLUDE ([Age], [AmountPayment], [AmountPaymentAccept], [C_ZAB], [Comments], [DateBegin], [DateEnd], [Emergency], [GUID_Case], [HopitalisationType], [idRecordCase], [IsChildTariff], [IsFirstDS], [IsNeedDisp], [IsSpecialCase], [IT_SL], [KD], [MSE], [NumberHistoryCase], [rf_idDepartmentMO], [rf_idDirectMO], [rf_idDoctor], [rf_idMO], [rf_idSubMO], [rf_idV002], [rf_idV004], [rf_idV006], [rf_idV008], [rf_idV009], [rf_idV010], [rf_idV012], [rf_idV014], [rf_idV018], [rf_idV019], [TypePay], [TypeTranslation]) ON [AccountOMSCase]
 GO
+CREATE NONCLUSTERED INDEX [IX_V006_Case] ON [dbo].[t_Case] ([rf_idV006]) INCLUDE ([Age], [AmountPayment], [DateBegin], [DateEnd], [id], [rf_idRecordCasePatient], [rf_idV002], [rf_idV008]) ON [AccountOMSCase]
+GO
 CREATE NONCLUSTERED INDEX [IX_rf_idV006_Age] ON [dbo].[t_Case] ([rf_idV006], [Age]) INCLUDE ([AmountPayment], [id], [rf_idRecordCasePatient]) ON [AccountOMSCase]
 GO
 CREATE NONCLUSTERED INDEX [IX_V006_DateEnd_V009_Age] ON [dbo].[t_Case] ([rf_idV006], [DateEnd], [rf_idV009], [Age]) INCLUDE ([AmountPayment], [DateBegin], [id], [rf_idRecordCasePatient], [rf_idV014]) ON [AccountOMSCase]
 GO
 CREATE NONCLUSTERED INDEX [IX_ReportShumeiko] ON [dbo].[t_Case] ([rf_idV006], [rf_idV002]) INCLUDE ([AmountPayment], [DateBegin], [DateEnd], [id], [idRecordCase], [NumberHistoryCase], [rf_idDepartmentMO], [rf_idMO], [rf_idRecordCasePatient], [rf_idV008], [rf_idV010]) ON [AccountOMSCase]
+GO
+CREATE NONCLUSTERED INDEX [IX_V006_V002_Age_Case] ON [dbo].[t_Case] ([rf_idV006], [rf_idV002], [Age]) INCLUDE ([id], [rf_idRecordCasePatient]) ON [AccountOMSCase]
 GO
 CREATE NONCLUSTERED INDEX [IX_V009_DateEnd_Report1] ON [dbo].[t_Case] ([rf_idV009], [DateEnd]) INCLUDE ([AmountPayment], [id], [idRecordCase], [IsChildTariff], [rf_idDoctor], [rf_idRecordCasePatient], [rf_idV002], [rf_idV006]) ON [AccountOMSCase]
 GO
@@ -102,6 +106,20 @@ GO
 GRANT SELECT ON  [dbo].[t_Case] TO [db_Financing]
 GO
 GRANT SELECT ON  [dbo].[t_Case] TO [PDAOR_Executive]
+GO
+SET NUMERIC_ROUNDABORT OFF
+GO
+SET ANSI_PADDING ON
+GO
+SET ANSI_WARNINGS ON
+GO
+SET CONCAT_NULL_YIELDS_NULL ON
+GO
+SET ARITHABORT ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
 GO
 SET NUMERIC_ROUNDABORT OFF
 GO

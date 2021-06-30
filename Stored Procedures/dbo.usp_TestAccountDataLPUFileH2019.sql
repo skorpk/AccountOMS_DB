@@ -924,6 +924,9 @@ CREATE TABLE #tDirectionDate(GUID_Case UNIQUEIDENTIFIER,NPR_Date DATE)
 CREATE TABLE #tProfileOfBed(GUID_Case UNIQUEIDENTIFIER,PROFIL_K smallint)
 CREATE TABLE #tPurposeOfVisit(GUID_Case UNIQUEIDENTIFIER,P_CEL VARCHAR(3),DN TINYINT)--DN может быть пустой
 CREATE TABLE #tCombinationOfSchema(GUID_CASE UNIQUEIDENTIFIER,DKK2 VARCHAR(10))
+----------Create Index-----
+CREATE NONCLUSTERED INDEX IX_2 ON #tCoeff_0(GUID_Case,CODE_SL,VAL_C)
+CREATE NONCLUSTERED INDEX IX_1 ON #tCoeff(ID_C,CODE_SL,VAL_C)
 -------------------20.07.2018------------------
 CREATE TABLE #ONK_SL_RC
 					(							
@@ -1044,9 +1047,23 @@ end
 				END
 			end
 			---сверяем КСЛП
-			IF EXISTS(SELECT * FROM #tCoeff b WHERE NOT EXISTS(SELECT * FROM #tCoeff_0 WHERE b.ID_C=GUID_Case AND CODE_SL=b.CODE_SL AND VAL_C=b.VAL_C ))
-			BEGIN 			
-				insert @et values(588,15)
+			IF EXISTS(						
+						--проверяю что бы все не было лишник КСЛП в счетах
+						SELECT ID_C,CODE_SL,VAL_C FROM #tCoeff
+						EXCEPT
+						SELECT GUID_Case, CODE_SL, VAL_C FROM #tCoeff_0
+						)
+			BEGIN 	
+				insert @et values(588,154)
+			END
+			IF EXISTS(
+						--проверяю что бы все кслп из RegisterCases были выставленны в счетах 
+						SELECT GUID_Case, CODE_SL, VAL_C FROM #tCoeff_0
+						EXCEPT
+						SELECT ID_C,CODE_SL,VAL_C FROM #tCoeff					
+						)
+			BEGIN 	
+				insert @et values(588,155)
 			END
 			--проверяем талоны
 			IF EXISTS(SELECT * FROM #tTalon b WHERE NOT EXISTS(SELECT * FROM #t5 WHERE VIDPOM=32 and b.GUID_Case=ID_C AND Tal_D=b.Tal_D AND Tal_P=b.Tal_P AND ISNULL(TAL_NUM,'bla-bla')=ISNULL(b.NumberOfTicket,'bla-bla') ))

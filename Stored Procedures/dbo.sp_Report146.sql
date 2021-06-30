@@ -94,7 +94,7 @@ BEGIN
 	  (c.rf_idV006 = 3 and m.MUGroupCode = 2 and c.rf_IdV008 in (1, 11, 12) and a.Letter <> 'T' and a.Letter <> 'K' and m.MUUnGroupCode <> 4 and m.MUUnGroupCode <> 90 and m.MUUnGroupCode <> 91)
       or (c.rf_idV006 = 2 and m.MUGroupCode = 55)
       or (c.rf_idV006 = 4)
-      or (c.rf_idV006 = 3 and m.MUGroupCode = 2 and c.rf_IdV008 in (13, 31, 21) and a.Letter <> 'T' and a.Letter <> 'K')
+      or (c.rf_idV006 = 3 and m.MUGroupCode = 2 and c.rf_IdV008 in (2, 21, 13, 31) and a.Letter <> 'T' and a.Letter <> 'K')
       or (c.rf_idV006 = 1 and m.MUGroupCode = 1 and m.MUUnGroupCode = 11)
       or (a.Letter = 'K')
 	)
@@ -110,7 +110,7 @@ BEGIN
        else case when (c.rf_idV006 = 4) then '2' else '3' end end as VMP_K,
     case when (c.rf_idV006 = 4) then 'вызов СМП' 
        else case when (a.Letter = 'K') then 'отдельные услуги' 
-       else case when ((c.rf_idV006 = 3) and ((a.Letter <> 'T' and a.Letter <> 'K' and c.rf_IdV008 in (1, 11, 12)) or (a.Letter <> 'T' and a.Letter <> 'K' and m.MUGroupCode = 2 and c.rf_IdV008 in (13, 31, 21)) or (m.MUGroupCode = 60 and m.MUUnGroupCode = 3))) then 'врачебные приемы' 
+       else case when ((c.rf_idV006 = 3) and ((a.Letter <> 'T' and a.Letter <> 'K' and c.rf_IdV008 in (1, 11, 12)) or (a.Letter <> 'T' and a.Letter <> 'K' and m.MUGroupCode = 2 and c.rf_IdV008 in (2, 21, 13, 31)) or (m.MUGroupCode = 60 and m.MUUnGroupCode = 3))) then 'врачебные приемы' 
        else case when ((c.rf_idV006 = 1) and ((m.MUGroupCode = 1 and m.MUUnGroupCode = 11) or (m.MUGroupCode = 60 and m.MUUnGroupCode = 3))) then 'койко-день'
        else case when ((c.rf_idV006 = 2) and ((m.MUGroupCode = 55) or (m.MUGroupCode = 60 and m.MUUnGroupCode = 3))) then 'пациенто-день' 
        else null end end end end end as UE,
@@ -126,7 +126,7 @@ BEGIN
   where (c.rf_idV006 = 3 and c.rf_IdV008 in (1, 11, 12) and a.Letter <> 'T' and a.Letter <> 'K')
     or (c.rf_idV006 = 2 and m.MUGroupCode = 55)
     or (c.rf_idV006 = 4)
-    or (c.rf_idV006 = 3 and m.MUGroupCode = 2 and c.rf_IdV008 in (13, 31, 21) and a.Letter <> 'T' and a.Letter <> 'K')
+    or (c.rf_idV006 = 3 and m.MUGroupCode = 2 and c.rf_IdV008 in (2, 21, 13, 31) and a.Letter <> 'T' and a.Letter <> 'K')
     or (c.rf_idV006 = 3 and m.MUGroupCode = 60 and m.MUUnGroupCode = 3)
     or (c.rf_idV006 = 1 and m.MUGroupCode = 1 and m.MUUnGroupCode = 11)
     or (c.rf_idV006 = 1 and m.MUGroupCode = 60 and m.MUUnGroupCode = 3)

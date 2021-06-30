@@ -22,17 +22,18 @@ select @xml=cast(replace('<Root><Num num="'+@num+'" /></Root>',',','" /><Num num
 			  WITH (num int)
 
  EXEC sp_xml_removedocument @idoc
-if ORIGINAL_LOGIN()<>'VTFOMS\SKrainov'
-begin
+--if ORIGINAL_LOGIN()<>'VTFOMS\SKrainov'
+--begin
 	--помечаю файлы которые отдал в СМО
 	insert t_FileExit(rf_idFile,FileName,DateUnLoad)
 	select f.id,f.FileNameHR,GETDATE()
 	from t_File f inner join @tableID t on
-			f.id=t.id 
-				left join t_FileExit fe on
-			f.id=fe.rf_idFile		
-	where fe.rf_idFile is null
-end
+			f.id=t.id 														  				
+	where NOT EXISTS(SELECT TOP(1) 1 FROM  t_FileExit fe WHERE f.id=fe.rf_idFile)
+			--AND NOT EXISTS(SELECT TOP(1) 1 FROM dbo.t_RegistersAccounts a WHERE a.rf_idSMO='34' AND a.rf_idFiles=f.id)
+PRINT(@@ROWCOUNT)
+PRINT('Insert into t_FileExit')
+--end
 
 --испоьлзую выбор файлов с помощью FILESTREAM
 --23.10.2013 решено отказаться от технологий выгрузки через SqlFileStream

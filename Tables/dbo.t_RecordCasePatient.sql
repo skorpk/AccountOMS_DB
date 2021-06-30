@@ -11,7 +11,8 @@ CREATE TABLE [dbo].[t_RecordCasePatient]
 [NewBorn] [varchar] (9) COLLATE Cyrillic_General_CI_AS NOT NULL,
 [AttachLPU] [char] (6) COLLATE Cyrillic_General_CI_AS NULL,
 [BirthWeight] [smallint] NULL,
-[MSE] [tinyint] NULL
+[MSE] [tinyint] NULL,
+[IsNewBorn] AS (case  when len([NewBorn])>(5) then (1) else (0) end) PERSISTED NOT NULL
 ) ON [AccountOMSInsurer]
 GO
 ALTER TABLE [dbo].[t_RecordCasePatient] ADD CONSTRAINT [PK_RecordCasePatient_idFiles_idRecordCase] PRIMARY KEY CLUSTERED  ([id]) ON [AccountOMSInsurer]

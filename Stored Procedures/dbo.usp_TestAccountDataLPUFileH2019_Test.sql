@@ -392,6 +392,7 @@ WITH(
 			ID_SL SMALLINT,
 			VAL_C DECIMAL(3,2) 
 	)
+CREATE NONCLUSTERED INDEX IX_1 ON #tCoeff(ID_C,CODE_SL,VAL_C)
 
 --20.12.2018
 INSERT #KSG_KPG( IDCASE, ID_C, SL_ID,N_KSG,CRIT,SL_K,IT_SL )
@@ -659,12 +660,15 @@ select @mcodeFile=CODE_MO from @t2
 if(@mcodeFile!=@mcodeSPR)
 begin
 		insert @et values(904,3)
-end
+END
+select @account=NSCHET,@year=[YEAR],@month=[MONTH] from @t2
 ----------------
 --NSCHET
+/* 
+--отключил блок проверки номера счета
 if NOT EXISTS(select * from @et)
 begin
-	select @account=NSCHET,@year=[YEAR],@month=[MONTH] from @t2
+	
 	--проверяем счет на соответствие ему реестра СП и ТК. добавить проверку счета на уникальность
 	
 	if NOT EXISTS(select * from dbo.fn_CheckAccountExistSPTK(@account,@codeMO,@month,@year))
@@ -676,7 +680,8 @@ begin
 		insert @et values(586,5)
 	end
 	
-end
+END
+*/
 --Enable 2013-01-01 
 -- check parameter of number account
 	declare @letter char(1)
@@ -826,83 +831,8 @@ begin
 					and isnull(r.MO_PR,'000000')=t.MO_PR
 					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
 					AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
-					AND r.IsNew=t.PR_NOV					
-	SELECT t.*
-	from (
-			select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
-					,p.NumberPolis
-					--,CASE WHEN p.OKATO<>'18000' THEN ISNULL(p.CodeSMO34,'34') ELSE p.rf_idSMO END AS rf_idSMO
-					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
-					,p.OKATO
-					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
-					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
-					,r1.BirthWeight,p.ENP,r1.IsNew
-			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
-							f.id=a.rf_idFilesBack
-							and f.CodeM=@codeMO
-							and a.NumberRegister=@number
-							and a.PropertyNumberRegister=@property
-							AND a.ReportYear=@year
-							AND a.ReportMonth=@month
-												inner join RegisterCases.dbo.t_RecordCaseBack r on
-							a.id=r.rf_idRegisterCaseBack
-												INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
-							r.id=cp.rf_idRecordCaseBack					
-							and cp.TypePay=1
-												inner join RegisterCases.dbo.t_RecordCase r1 on
-							r.rf_idRecordCase=r1.id
-												inner join RegisterCases.dbo.t_PatientBack p on
-							r.id=p.rf_idRecordCaseBack
-							--and p.rf_idSMO=@smo
-												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
-							r.rf_idCase=att.rf_idCase
-			
-		  ) r right join #t3 t on
-					r.ID_Patient=t.ID_PAC
-					and r.rf_idF008=t.VPOLIS
-					and r.SeriaPolis=COALESCE(t.SPOLIS,'')
-					and r.NumberPolis=t.NPOLIS
-					and r.rf_idSMO=t.SMO
-					and r.OKATO=COALESCE(t.SMO_OK,'18000')
-					and r.NewBorn=t.NOVOR
-					and isnull(r.MO_PR,'000000')=t.MO_PR
-					AND ISNULL(r.BirthWeight,0)=ISNULL(t.VNOV_D,0)
-					--AND ISNULL(r.ENP,'')=ISNULL(t.ENP,'')
-					AND r.IsNew=t.PR_NOV	
-	WHERE r.ID_Patient IS null						
-	/*
-	select DISTINCT CAST(r1.ID_Patient as nvarchar(36)) as ID_Patient,p.rf_idF008,ISNULL(CAST(p.SeriaPolis AS VARCHAR(10)),'') SeriaPolis
-					,p.NumberPolis
-					,CASE WHEN p.OKATO<>'18000' THEN '34' ELSE p.rf_idSMO END AS rf_idSMO
-					,p.OKATO
-					,cast(r1.NewBorn as nvarchar(9)) as NewBorn,
-					CASE WHEN att.AttachLPU IS NULL THEN isnull(p.AttachCodeM,'000000') WHEN p.OKATO<>'18000' THEN '000000' ELSE att.AttachLPU end as MO_PR
-					,r1.BirthWeight,p.ENP,r1.IsNew
-			from RegisterCases.dbo.t_FileBack f inner join RegisterCases.dbo.t_RegisterCaseBack a on 
-							f.id=a.rf_idFilesBack
-							and f.CodeM=@codeMO
-							and a.NumberRegister=@number
-							and a.PropertyNumberRegister=@property
-							AND a.ReportYear=@year
-							AND a.ReportMonth=@month
-												inner join RegisterCases.dbo.t_RecordCaseBack r on
-							a.id=r.rf_idRegisterCaseBack
-												INNER JOIN RegisterCases.dbo.t_CaseBack cp ON
-							r.id=cp.rf_idRecordCaseBack					
-							and cp.TypePay=1
-												inner join RegisterCases.dbo.t_RecordCase r1 on
-							r.rf_idRecordCase=r1.id
-												inner join RegisterCases.dbo.t_PatientBack p on
-							r.id=p.rf_idRecordCaseBack
-							--and p.rf_idSMO=@smo
-												LEFT JOIN RegisterCases.dbo.t_RefCaseAttachLPUItearion2 att ON
-							r.rf_idCase=att.rf_idCase
-			WHERE CAST(r1.ID_Patient as nvarchar(36)) IN('1f95861f-6798-11eb-90c2-5254001b83e9','1f5cba7a-6798-11eb-90c2-5254001b83e9','1f825be2-6798-11eb-90c2-5254001b83e9')
-
-*/
-	
-
-	IF(@zapRC-@zapA)<>0	
+					
+		IF(@zapRC-@zapA)<>0	
 	begin
 		insert @et values(588,13)
 	end	
@@ -993,6 +923,9 @@ CREATE TABLE #tBirthWeight(	GUID_Case uniqueidentifier,VNOV_M smallint )
 CREATE TABLE #tDisgnosis(GUID_Case uniqueidentifier,Code VARCHAR(10),TypeDiagnosis TINYINT )
 
 CREATE TABLE #tCoeff_0(GUID_Case uniqueidentifier, CODE_SL SMALLINT,VAL_C DECIMAL(3,2))
+
+CREATE NONCLUSTERED INDEX IX_2 ON #tCoeff_0(GUID_Case,CODE_SL,VAL_C)
+
 CREATE TABLE #tTalon(GUID_Case uniqueidentifier, Tal_D DATE, Tal_P DATE,NumberOfTicket VARCHAR(20))
 CREATE TABLE #tmpKiro(GUID_Case UNIQUEIDENTIFIER,CODE_KIRO INT, VAL_K DECIMAL(3,2))
 CREATE TABLE #tmpAddCriterion(GUID_Case UNIQUEIDENTIFIER,ADD_CRITERION VARCHAR(20))
@@ -1174,10 +1107,23 @@ end
 				END
 			end
 			---сверяем КСЛП
-			IF EXISTS(SELECT * FROM #tCoeff b WHERE NOT EXISTS(SELECT * FROM #tCoeff_0 WHERE b.ID_C=GUID_Case AND CODE_SL=b.CODE_SL AND VAL_C=b.VAL_C ))
+			IF EXISTS(						
+						--проверяю что бы все не было лишник КСЛП в счетах
+						SELECT ID_C,CODE_SL,VAL_C FROM #tCoeff
+						EXCEPT
+						SELECT GUID_Case, CODE_SL, VAL_C FROM #tCoeff_0
+						)
 			BEGIN 	
-				SELECT 2		
-				insert @et values(588,15)
+				insert @et values(588,154)
+			END
+			IF EXISTS(
+						--проверяю что бы все кслп из RegisterCases были выставленны в счетах 
+						SELECT GUID_Case, CODE_SL, VAL_C FROM #tCoeff_0
+						EXCEPT
+						SELECT ID_C,CODE_SL,VAL_C FROM #tCoeff					
+						)
+			BEGIN 	
+				insert @et values(588,155)
 			END
 			--проверяем талоны
 			IF EXISTS(SELECT * FROM #tTalon b WHERE NOT EXISTS(SELECT * FROM #t5 WHERE VIDPOM=32 and b.GUID_Case=ID_C AND Tal_D=b.Tal_D AND Tal_P=b.Tal_P AND ISNULL(TAL_NUM,'bla-bla')=ISNULL(b.NumberOfTicket,'bla-bla') ))

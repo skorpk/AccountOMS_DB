@@ -10,7 +10,7 @@ FROM     dbo.t_CompletedCase INNER JOIN
                dbo.t_RecordCasePatient ON dbo.t_CompletedCase.rf_idRecordCasePatient = dbo.t_RecordCasePatient.id INNER JOIN
                dbo.t_Case ON dbo.t_RecordCasePatient.id = dbo.t_Case.rf_idRecordCasePatient LEFT OUTER JOIN
                dbo.t_PaymentAcceptedCase2 ON dbo.t_Case.id = dbo.t_PaymentAcceptedCase2.rf_idCase
-WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2019-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-01-19 00:00:00', 102))
+WHERE  (dbo.t_PaymentAcceptedCase2.DateRegistration BETWEEN CONVERT(DATETIME, '2021-01-01 00:00:00', 102) AND CONVERT(DATETIME, '2021-06-15 00:00:00', 102))
 GROUP BY dbo.t_CompletedCase.id, dbo.t_PaymentAcceptedCase2.idAkt, ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEK, 0) + ISNULL(dbo.t_PaymentAcceptedCase2.AmountMEE, 0) 
                + ISNULL(dbo.t_PaymentAcceptedCase2.AmountEKMP, 0)
 GO
@@ -162,7 +162,7 @@ Begin DesignProperties =
          SortType = 1345
          SortOrder = 1413
          GroupBy = 1350
-         Filter = 1780
+         Filter = 3831
          Or = 1350
          Or = 13', 'SCHEMA', N'dbo', 'VIEW', N'View_EKSNEW', NULL, NULL
 GO
